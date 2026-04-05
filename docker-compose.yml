@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+backend:
+  build:
+  context: ./backend
+  dockerfile: Dockerfile
+  container_name: mastrade-backend
+  ports: "8000:8000"
+  volumes: ./backend:/app
+  environment: DATABASE_URL=sqlite:///./data.db
+  networks: mastrade-net
+
+frontend:
+  build:
+  context: ./frontend
+  dockerfile: Dockerfile
+  container_name: mastrade-frontend
+  ports: "3000:3000"
+  volumes: ./frontend:/app
+  depends_on: backend
+  networks: mastrade-net
+
+networks:
+  mastrade-net:
+  driver: bridge
