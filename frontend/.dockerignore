@@ -1,0 +1,16 @@
+.git
+.gitignore
+README.md
+.next
+node_modules
+npm-debug.log
+.DS_Store
+.vscode
+.env.local
+.env.*.local
+coverage
+dist
+build
+.eslintcache
+.npmrc
+.turbo

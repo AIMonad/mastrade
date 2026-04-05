@@ -1,0 +1,93 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: mastrade-traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - mastrade-net
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - CF_API_EMAIL=${CF_API_EMAIL:-}  # Cloudflare optional
+      - CF_API_KEY=${CF_API_KEY:-}      # Cloudflare optional
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - ./traefik/acme.json:/acme.json
+      - ./traefik/config.yml:/config.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mastrade-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=sqlite:////data/mastrade.db
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend/data:/data  # Persist SQLite database
+      - ./backend/logs:/app/logs
+    networks:
+      - mastrade-net
+    expose:
+      - 5000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.service=backend"
+      - "traefik.http.services.backend.loadbalancer.server.port=5000"
+      - "traefik.http.middlewares.backend-path.stripprefix.prefixes=/api"
+      - "traefik.http.routers.backend.middlewares=backend-path@docker"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=/api
+    container_name: mastrade-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=/api
+    networks:
+      - mastrade-net
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.service=frontend"
+      - "traefik.http.routers.frontend.priority=1"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  mastrade-net:
+    driver: bridge

@@ -1,0 +1,68 @@
+http:
+  middlewares:
+    # Rate limiting
+    ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
+    
+    # Security headers
+    securityHeaders:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        sslHost: ${DOMAIN_NAME:-localhost}
+        sslForceHost: true
+        sslTemporaryRedirect: false
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: "geolocation=(), microphone=(), camera=()"
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+    
+    # CORS for API
+    apiCors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+        accessControlAllowOriginList:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+
+  routers:
+    # Health check endpoint
+    health:
+      rule: "Path(`/health`)"
+      service: health
+      middlewares:
+        - ratelimit
+
+  services:
+    health:
+      loadBalancer:
+        servers: []
+
+# Redirect HTTP to HTTPS (uncomment when SSL is configured)
+# http:
+#   routers:
+#     http-redirect:
+#       rule: "HostRegexp(`{host:.*}`)"
+#       entryPoints:
+#         - web
+#       middlewares:
+#         - redirect-to-https
+#       service: noop
+#
+#   middlewares:
+#     redirect-to-https:
+#       redirectScheme:
+#         scheme: https
+#         port: "443"
+#         permanent: true

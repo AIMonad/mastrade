@@ -5,8 +5,25 @@ out/
 
 # Dependencies
 frontend/node_modules
+backend/__pycache__
 
 # env
 frontend/.env
 frontend/.env.local
 frontend/package-lock.json
+.env.production
+backend/.env.local
+
+# Production data and logs
+backend/data/
+backend/logs/
+nginx/ssl/
+*.log
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+*.swp
+*.swo
