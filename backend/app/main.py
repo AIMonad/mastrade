@@ -15,16 +15,16 @@ class Trade(db.Model):
         return {"id": self.id, "symbol": self.symbol, "quantity": self.quantity, "price": self.price}
 
     @app.before_first_request
-        def create_tables():
+    def create_tables():
         db.create_all()
 
     @app.route("/trades", methods=["GET"])
-        def get_trades():
+    def get_trades():
         trades = Trade.query.all()
         return jsonify([t.to_dict() for t in trades])
 
     @app.route("/trades", methods=["POST"])
-        def add_trade():
+    def add_trade():
         data = request.json
         t = Trade(symbol=data["symbol"], quantity=data["quantity"], price=data["price"])
         db.session.add(t)

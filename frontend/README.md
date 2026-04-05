@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+• Pre-flight
+  • Project layout (in mastrade root):
+    • frontend/ (Next.js app)
+    • backend/ (Python API, Flask or FastAPI)
+    • venv/ or backend/venv (your Python virtual environment)
+  • Working directory: mastrade
 
-## Getting Started
+1. Activate Python virtual environment
 
-First, run the development server:
+• Windows (cmd)
+  • cd mastrade\backend
+  • .\venv\Scripts\activate
+• Windows (PowerShell)
+  • cd mastrade\backend
+  • .\venv\Scripts\Activate.ps1
+• Verify Flask is installed in the venv
+  • pip show Flask
+  • If not shown, install: pip install Flask SQLAlchemy
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. Quick Flask check (in venv)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+• From backend with venv active:
+  • python -m flask --version
+  • If needed: set FLASK_APP=app.py
+  • flask run --port 8000
+  • Open http://127.0.0.1:8000/trades (or your route)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. VSCode interpreter setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+• In VSCode:
+  • Command Palette → Python: Select Interpreter
+  • Pick mastrade/backend/venv/Scripts/python.exe
+  • If prompted, allow language server setup
+• Verify path inside VSCode:
+  • Open a Python file and run: import sys; print(sys.executable)
 
-## Learn More
+4. Resolve “Import could not be resolved” warning (if it persists)
 
-To learn more about Next.js, take a look at the following resources:
+• Ensure the VSCode Python path matches the venv
+• Ensure Flask is installed in that interpreter (pip list / pip show Flask)
+• Reload VSCode window after changing interpreter
+• Ensure Pylance is using the same interpreter (Python: Analysis: Python Path)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Optional: streamline development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+• Docker path (optional):
+  • docker-compose up --build
+• Local dev (no Docker):
+  • Backend: activate venv, run Flask (flask run) or FastAPI (uvicorn)
+  • Frontend: go to frontend; npm install; npm run dev
 
-## Deploy on Vercel
+6. Quick verification
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+• In the venv, run a small test:
+  • python
+  • from flask import Flask
+  • print("Flask OK")
+• Or a tiny script to import your app and start it

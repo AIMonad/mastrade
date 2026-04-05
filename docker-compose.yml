@@ -3,9 +3,9 @@ services:
 backend:
   build:
   context: ./backend
-  dockerfile: Dockerfile
+  dockerfile: DockerfileFlask
   container_name: mastrade-backend
-  ports: "8000:8000"
+  ports: "8000:5000"
   volumes: ./backend:/app
   environment: DATABASE_URL=sqlite:///./data.db
   networks: mastrade-net
@@ -13,7 +13,7 @@ backend:
 frontend:
   build:
   context: ./frontend
-  dockerfile: Dockerfile
+  dockerfile: DockerfileNext
   container_name: mastrade-frontend
   ports: "3000:3000"
   volumes: ./frontend:/app
