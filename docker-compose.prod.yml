@@ -46,18 +46,19 @@ services:
       - mastrade-net
     expose:
       - 5000
+    backend:
+  # … (build, env, etc.)
     labels:
       - "traefik.enable=true"
-      # **API router – matches any host that resolves to this VPS AND any path that starts with /api**
       - "traefik.http.routers.backend-api.rule=Host(`72.62.82.1`, `localhost`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.backend-api.entrypoints=web"          # HTTP (port 8080)
-      - "traefik.http.routers.backend-api.entrypoints=websecure" # HTTPS (port 4443) – optional, you can keep just one if you want both
-      - "traefik.http.routers.backend-api.priority=10"           # Higher priority than the frontend
+      - "traefik.http.routers.backend-api.entrypoints=web"
+      - "traefik.http.routers.backend-api.entrypoints=websecure"
+      - "traefik.http.routers.backend-api.priority=10"
       - "traefik.http.routers.backend-api.service=backend-api-service"
       - "traefik.http.services.backend-api-service.loadbalancer.server.port=5000"
-      # Strip the "/api" prefix before sending the request to Flask
       - "traefik.http.middlewares.backend-api-stripprefix.stripprefix.prefixes=/api"
       - "traefik.http.routers.backend-api.middlewares=backend-api-stripprefix@docker"
+    
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/trades"]
       interval: 30s
