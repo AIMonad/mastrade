@@ -46,8 +46,6 @@ services:
       - mastrade-net
     expose:
       - 5000
-    backend:
-  # … (build, env, etc.)
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend-api.rule=Host(`72.62.82.1`, `localhost`) && PathPrefix(`/api`)"
