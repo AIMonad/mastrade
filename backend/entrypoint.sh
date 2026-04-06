@@ -8,7 +8,7 @@
 echo "Creating database tables..."
 # Use 'python -m flask' to ensure 'flask' command is found
 # --app app/Main.py tells Flask where to find the app instance
-python -m flask --app app/Main.py create-db
+python -m flask --app app/main.py create-db
 echo "Database tables setup complete."
 
 # Execute the CMD passed to the container (e.g., gunicorn)

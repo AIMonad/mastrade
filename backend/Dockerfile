@@ -22,4 +22,4 @@ ENTRYPOINT ["./entrypoint.sh"]
 # Define the command to run your application (gunicorn in this case)
 # This will be passed to the entrypoint.sh script using 'exec "$@"'
 # Note: The port 5000 is used in your current CMD. Ensure this matches your application's expected port.
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app.Main:app"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app.main:app"]
