@@ -1,6 +1,8 @@
+version: "3.8"
+
 services:
   # -------------------------------------------------
-  # TRAEFIK (unchanged – keep your existing block)
+  # TRAEFIK
   # -------------------------------------------------
   traefik:
     image: traefik:latest
@@ -11,8 +13,8 @@ services:
     networks:
       - mastrade-net
     ports:
-      - "8080:80"
-      - "4443:443"
+      - "8080:80"      # HTTP
+      - "4443:443"     # HTTPS
     environment:
       - CF_API_EMAIL=${CF_API_EMAIL:-}
       - CF_API_KEY=${CF_API_KEY:-}
@@ -25,9 +27,11 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
       - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
 
   # -------------------------------------------------
-  # BACKEND – API service
+  # BACKEND – Flask API
   # -------------------------------------------------
   backend:
     build:
@@ -47,16 +51,17 @@ services:
     expose:
       - 5000
     labels:
+      # *** API router – matches any request that comes to this VPS (IP or localhost) and starts with /api ***
       - "traefik.enable=true"
       - "traefik.http.routers.backend-api.rule=Host(`72.62.82.1`, `localhost`) && PathPrefix(`/api`)"
       - "traefik.http.routers.backend-api.entrypoints=web"
       - "traefik.http.routers.backend-api.entrypoints=websecure"
-      - "traefik.http.routers.backend-api.priority=10"
+      - "traefik.http.routers.backend-api.priority=10"                     # High priority
       - "traefik.http.routers.backend-api.service=backend-api-service"
       - "traefik.http.services.backend-api-service.loadbalancer.server.port=5000"
+      # Strip the '/api' prefix before forwarding to Flask
       - "traefik.http.middlewares.backend-api-stripprefix.stripprefix.prefixes=/api"
       - "traefik.http.routers.backend-api.middlewares=backend-api-stripprefix@docker"
-    
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/trades"]
       interval: 30s
@@ -65,14 +70,14 @@ services:
       start_period: 40s
 
   # -------------------------------------------------
-  # FRONTEND – React/Next app
+  # FRONTEND – Next.js/React UI
   # -------------------------------------------------
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=/api     # <-- move args here
+        - NEXT_PUBLIC_API_URL=/api          # <-- build‑time env var
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
@@ -82,11 +87,12 @@ services:
     expose:
       - 3000
     labels:
+      # Frontend catches everything **except** the higher‑priority /api routes
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=Host(`72.62.82.1`, `localhost`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.priority=5"
+      - "traefik.http.routers.frontend.priority=5"              # Lower than API
       - "traefik.http.routers.frontend.service=frontend-service"
       - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"
     healthcheck:
