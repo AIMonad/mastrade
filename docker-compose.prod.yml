@@ -1,32 +1,38 @@
+version: '3.8' # Ensure you have a version defined at the top if not already
+
 services:
   traefik:
     image: traefik:latest
     container_name: mastrade-traefik
     restart: unless-stopped
     security_opt:
-      - no-new-privileges:true
+        - no-new-privileges:true
     networks:
-      - mastrade-net
+        - mastrade-net
     ports:
-      - "8080:80"
-      - "4443:443"
+        - "8080:80"
+        - "4443:443"
     environment:
-      - CF_API_EMAIL=${CF_API_EMAIL:-}  # Cloudflare optional
-      - CF_API_KEY=${CF_API_KEY:-}      # Cloudflare optional
+        - CF_API_EMAIL=${CF_API_EMAIL:-}
+        - CF_API_KEY=${CF_API_KEY:-}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/traefik.yml:ro
-      - ./traefik/acme.json:/acme.json
-      - ./traefik/config.yml:/config.yml:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - ./traefik/traefik.yml:/traefik.yml:ro
+        - ./traefik/acme.json:/acme.json
+        - ./traefik/config.yml:/config.yml:ro
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)"
-      - "traefik.http.routers.traefik.service=api@internal"
+        - "traefik.enable=true"
+        # This label is for accessing Traefik's dashboard, usually from a specific host/port
+        # It's generally better not to expose the dashboard externally without authentication.
+        # For localhost access:
+        - "traefik.http.routers.traefik.rule=Host(`traefik.localhost`)" # Using backticks for domain/host names is safer
+        - "traefik.http.routers.traefik.entrypoints=web" # Ensure it uses the HTTP entrypoint
+        - "traefik.http.routers.traefik.service=api@internal"
     logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+        driver: "json-file"
+        options:
+          max-size: "10m"
+          max-file: "3"
 
   backend:
     build:
@@ -39,7 +45,7 @@ services:
       - FLASK_ENV=production
       - PYTHONUNBUFFERED=1
     volumes:
-      - ./backend/data:/data  # Persist SQLite database
+      - ./backend/data:/data # Persist SQLite database
       - ./backend/logs:/app/logs
     networks:
       - mastrade-net
@@ -47,13 +53,17 @@ services:
       - 5000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
-      - "traefik.http.routers.backend.service=backend"
-      - "traefik.http.services.backend.loadbalancer.server.port=5000"
-      - "traefik.http.middlewares.backend-path.stripprefix.prefixes=/api"
-      - "traefik.http.routers.backend.middlewares=backend-path@docker"
+      # API Router: Use a high priority and PathPrefix for /api, which strips /api
+      - "traefik.http.routers.backend-api.rule=Host(`72.62.82.1`, `localhost`) && PathPrefix(`/api`)" # Target your IP and localhost for API
+      - "traefik.http.routers.backend-api.entrypoints=web" # Ensure it uses the HTTP entrypoint
+      - "traefik.http.routers.backend-api.priority=10" # High priority for API rule
+      - "traefik.http.routers.backend-api.service=backend-api-service"
+      - "traefik.http.services.backend-api-service.loadbalancer.server.port=5000"
+      # Middleware to strip `/api` from the path before sending to backend
+      - "traefik.http.middlewares.backend-api-stripprefix.stripprefix.prefixes=/api"
+      - "traefik.http.routers.backend-api.middlewares=backend-api-stripprefix@docker"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/trades"] # Corrected healthcheck test
       interval: 30s
       timeout: 10s
       retries: 3
@@ -63,29 +73,35 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=/api
+    args:
+      - NEXT_PUBLIC_API_URL=/api # This seems to be for Next.js build, not runtime
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=/api
+      # This NEXT_PUBLIC_API_URL is typically for the frontend build.
+      # The runtime routing is handled by Traefik.
+      - NEXT_PUBLIC_API_URL=/api # Keep for build, not for runtime routing config
     networks:
       - mastrade-net
     expose:
       - 3000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.frontend.service=frontend"
-      - "traefik.http.routers.frontend.priority=1"
+      # Frontend Router: Route all other paths to frontend on port 3000,
+      # BUT give it lower priority so API routes take precedence.
+      # We use a more specific rule for the frontend itself.
+      - "traefik.http.routers.frontend.rule=Host(`72.62.82.1`, `localhost`)" # Target your IP and localhost
+      - "traefik.http.routers.frontend.entrypoints=web" # Ensure it uses HTTP entrypoint
+      - "traefik.http.routers.frontend.complement=HostRule(`traefik.localhost`)" # Don't route dashboard host to frontend
+      - "traefik.http.routers.frontend.priority=5" # Medium priority
+      - "traefik.http.routers.frontend.service=frontend-service"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/ || exit 1"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"] # Corrected wget command
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-
 networks:
   mastrade-net:
     driver: bridge
