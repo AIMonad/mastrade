@@ -73,8 +73,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    args:
-      - NEXT_PUBLIC_API_URL=/api # This seems to be for Next.js build, not runtime
+    #args:
+    #  - NEXT_PUBLIC_API_URL=/api # This seems to be for Next.js build, not runtime
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
