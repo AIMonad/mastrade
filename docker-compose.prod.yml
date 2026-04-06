@@ -72,6 +72,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=/api     # <-- move args here
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
@@ -82,11 +84,10 @@ services:
       - 3000
     labels:
       - "traefik.enable=true"
-# Frontend catches *everything else* (everything that isn’t /api)
       - "traefik.http.routers.frontend.rule=Host(`72.62.82.1`, `localhost`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.priority=5"               # Lower than API router
+      - "traefik.http.routers.frontend.priority=5"
       - "traefik.http.routers.frontend.service=frontend-service"
       - "traefik.http.services.frontend-service.loadbalancer.server.port=3000"
     healthcheck:
