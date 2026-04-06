@@ -72,8 +72,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    args:
-      - NEXT_PUBLIC_API_URL=/api
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
