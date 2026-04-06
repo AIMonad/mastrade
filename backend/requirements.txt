@@ -1,4 +1,3 @@
 Flask
 SQLAlchemy
 gunicorn
-sqlite3  # optional; usually comes with Python
