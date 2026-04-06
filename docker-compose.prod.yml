@@ -11,7 +11,7 @@ services:
       - mastrade-net
     ports:
       - "8080:80"
-      - "443:443"
+      - "4443:443"
     environment:
       - CF_API_EMAIL=${CF_API_EMAIL:-}  # Cloudflare optional
       - CF_API_KEY=${CF_API_KEY:-}      # Cloudflare optional
