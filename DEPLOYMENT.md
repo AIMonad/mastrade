@@ -84,7 +84,7 @@ If your Hostinger VPS has native Traefik support:
 cd /opt  # or /home/username
 
 # Clone your repository (adjust URL as needed)
-git clone https://your-repo-url.git mastrade
+git clone https://github.com/AIMonad/mastrade.git mastrade
 cd mastrade
 
 # Create necessary directories
