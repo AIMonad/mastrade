@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy the requirements file and install dependencies
 COPY requirements.txt .
 # Use --prefix to ensure pip installs into the correct site-packages directory
-RUN pip install --no-cache-dir --prefix=/usr/lib/python3/dist-packages -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of your application code, including the entrypoint script
 COPY . .
