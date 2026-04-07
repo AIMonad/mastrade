@@ -7,10 +7,12 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_URL=sqlite:////data/mastrade.db
+      - FLASK_ENV=production
     networks:
       - solfun_default
     labels:
       - "traefik.enable=true"
+      # Routes any traffic hitting trade.flowmarket.io/api to this container
       - "traefik.http.routers.mastrade-api.rule=Host(`trade.flowmarket.io`) && PathPrefix(`/api`)"
       - "traefik.http.routers.mastrade-api.entrypoints=web"
       - "traefik.http.middlewares.mastrade-strip.stripprefix.prefixes=/api"
@@ -22,13 +24,17 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
+        # Bake the new subdomain API path into the Next.js build
         - NEXT_PUBLIC_API_URL=http://trade.flowmarket.io/api
     container_name: mastrade-frontend
     restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://trade.flowmarket.io/api
     networks:
       - solfun_default
     labels:
       - "traefik.enable=true"
+      # Routes the main subdomain traffic here
       - "traefik.http.routers.mastrade-ui.rule=Host(`trade.flowmarket.io`)"
       - "traefik.http.routers.mastrade-ui.entrypoints=web"
       - "traefik.http.services.mastrade-ui.loadbalancer.server.port=3000"
