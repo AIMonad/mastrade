@@ -1,9 +1,4 @@
-version: "3.8"
-
 services:
-  # -------------------------------------------------
-  # BACKEND – Flask API
-  # -------------------------------------------------
   backend:
     build:
       context: ./backend
@@ -18,7 +13,7 @@ services:
       - ./backend/data:/data
       - ./backend/logs:/app/logs
     networks:
-      - solfun_default # Just the name here
+      - solfun_default
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mastrade-api.rule=Host(`72.62.82.1`) && PathPrefix(`/api`)"
@@ -26,22 +21,13 @@ services:
       - "traefik.http.middlewares.mastrade-strip.stripprefix.prefixes=/api"
       - "traefik.http.routers.mastrade-api.middlewares=mastrade-strip"
       - "traefik.http.services.mastrade-api.loadbalancer.server.port=5000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/trades"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
-  # -------------------------------------------------
-  # FRONTEND – Next.js/React UI
-  # -------------------------------------------------
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=/api          # <-- build‑time env var
+        - NEXT_PUBLIC_API_URL=/api
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
@@ -52,17 +38,9 @@ services:
       - 3000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mastrade-frontend.rule=PathPrefix(/)"
-      - "traefik.http.routers.mastrade-frontend.priority=1"
+      - "traefik.http.routers.mastrade-frontend.rule=Host(`72.62.82.1`)"
       - "traefik.http.routers.mastrade-frontend.entrypoints=web"
-      # REMOVE websecure for now until we confirm the IP works on HTTP
       - "traefik.http.services.mastrade-frontend.loadbalancer.server.port=3000"
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 networks:
   solfun_default:
