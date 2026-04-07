@@ -30,17 +30,17 @@ def create_db_command():
     print("Database tables created successfully!")
 
 # Added a health check - good for Traefik to verify the container is up
-@app.route("/api/health", methods=["GET"])
+@app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "healthy"}), 200
 
 # Note: I added /api to the routes to match your Traefik PathPrefix
-@app.route("/api/trades", methods=["GET"])
+@app.route("/trades", methods=["GET"])
 def get_trades():
     trades = Trade.query.all()
     return jsonify([t.to_dict() for t in trades])
 
-@app.route("/api/trades", methods=["POST"])
+@app.route("/trades", methods=["POST"])
 def add_trade():
     data = request.json
     t = Trade(symbol=data["symbol"], quantity=data["quantity"], price=data["price"])
