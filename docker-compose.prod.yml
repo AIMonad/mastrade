@@ -16,8 +16,10 @@ services:
       - solfun_default
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mastrade-api.rule=Host(`72.62.82.1`) && PathPrefix(`/api`)"
+      # Match anything that starts with /api
+      - "traefik.http.routers.mastrade-api.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.mastrade-api.entrypoints=web"
+      - "traefik.http.routers.mastrade-api.priority=10"
       - "traefik.http.middlewares.mastrade-strip.stripprefix.prefixes=/api"
       - "traefik.http.routers.mastrade-api.middlewares=mastrade-strip"
       - "traefik.http.services.mastrade-api.loadbalancer.server.port=5000"
@@ -38,10 +40,10 @@ services:
       - 3000
     labels:
       - "traefik.enable=true"
-      # This matches everything (The "Catch-All")
+      # The Catch-All: Matches everything else
       - "traefik.http.routers.mastrade-frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.mastrade-frontend.entrypoints=web"
-      # Priority 1 is the lowest. flowmarket.io (Priority 10+) will still take precedence.
+      # Priority 1 makes this the "default" if no other rules match
       - "traefik.http.routers.mastrade-frontend.priority=1"
       - "traefik.http.services.mastrade-frontend.loadbalancer.server.port=3000"
 
