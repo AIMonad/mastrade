@@ -38,8 +38,9 @@ services:
       - 3000
     labels:
       - "traefik.enable=true"
-      # This tells Traefik: "If no other rules match, send traffic here"
+      # This replaces the Host rule - it says "Match everything"
       - "traefik.http.routers.mastrade-frontend.rule=PathPrefix(`/`)"
+      # Low priority so flowmarket.io (which has a specific Host rule) still works
       - "traefik.http.routers.mastrade-frontend.priority=1"
       - "traefik.http.routers.mastrade-frontend.entrypoints=web"
       - "traefik.http.services.mastrade-frontend.loadbalancer.server.port=3000"
