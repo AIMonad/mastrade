@@ -7,19 +7,12 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_URL=sqlite:////data/mastrade.db
-      - FLASK_ENV=production
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ./backend/data:/data
-      - ./backend/logs:/app/logs
     networks:
       - solfun_default
     labels:
       - "traefik.enable=true"
-      # Match anything that starts with /api
-      - "traefik.http.routers.mastrade-api.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.mastrade-api.rule=Host(`trade.flowmarket.io`) && PathPrefix(`/api`)"
       - "traefik.http.routers.mastrade-api.entrypoints=web"
-      - "traefik.http.routers.mastrade-api.priority=10"
       - "traefik.http.middlewares.mastrade-strip.stripprefix.prefixes=/api"
       - "traefik.http.routers.mastrade-api.middlewares=mastrade-strip"
       - "traefik.http.services.mastrade-api.loadbalancer.server.port=5000"
@@ -29,21 +22,16 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - NEXT_PUBLIC_API_URL=/api
+        - NEXT_PUBLIC_API_URL=http://trade.flowmarket.io/api
     container_name: mastrade-frontend
     restart: unless-stopped
-    environment:
-      - NEXT_PUBLIC_API_URL=/api
     networks:
       - solfun_default
     labels:
       - "traefik.enable=true"
-      # The ultimate catch-all rule
-      - "traefik.http.routers.mastrade-ui.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.mastrade-ui.rule=Host(`trade.flowmarket.io`)"
       - "traefik.http.routers.mastrade-ui.entrypoints=web"
-      # Priority 1 ensures this is the absolute last resort
-      - "traefik.http.routers.mastrade-ui.priority=1"
-      - "traefik.http.services.mastrade-ui-svc.loadbalancer.server.port=3000"
+      - "traefik.http.services.mastrade-ui.loadbalancer.server.port=3000"
 
 networks:
   solfun_default:
