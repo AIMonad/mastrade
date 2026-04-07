@@ -36,16 +36,14 @@ services:
       - NEXT_PUBLIC_API_URL=/api
     networks:
       - solfun_default
-    expose:
-      - 3000
     labels:
       - "traefik.enable=true"
-      # The Catch-All: Matches everything else
-      - "traefik.http.routers.mastrade-frontend.rule=PathPrefix(`/`)"
-      - "traefik.http.routers.mastrade-frontend.entrypoints=web"
-      # Priority 1 makes this the "default" if no other rules match
-      - "traefik.http.routers.mastrade-frontend.priority=1"
-      - "traefik.http.services.mastrade-frontend.loadbalancer.server.port=3000"
+      # The ultimate catch-all rule
+      - "traefik.http.routers.mastrade-ui.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.mastrade-ui.entrypoints=web"
+      # Priority 1 ensures this is the absolute last resort
+      - "traefik.http.routers.mastrade-ui.priority=1"
+      - "traefik.http.services.mastrade-ui-svc.loadbalancer.server.port=3000"
 
 networks:
   solfun_default:
