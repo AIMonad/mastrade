@@ -38,7 +38,9 @@ services:
       - 3000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mastrade-frontend.rule=Host(`72.62.82.1`)"
+      # This tells Traefik: "If no other rules match, send traffic here"
+      - "traefik.http.routers.mastrade-frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.mastrade-frontend.priority=1"
       - "traefik.http.routers.mastrade-frontend.entrypoints=web"
       - "traefik.http.services.mastrade-frontend.loadbalancer.server.port=3000"
 
