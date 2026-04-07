@@ -1,44 +1,53 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-import os # Import os module
+from flask_cors import CORS  # <-- IMPORT THIS
+import os
 
 app = Flask(__name__)
-# Use an environment variable for the database URI or provide a default
-# This is good practice for deployment
+
+# --- NEW: Enable CORS ---
+# This allows your Next.js frontend to talk to this API
+CORS(app, resources={r"/*": {"origins": ["https://trade.flowmarket.io", "https://flowmarket.io"]}})
+
 db_path = os.environ.get("DATABASE_URL", "sqlite:///data.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = db_path
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False # Good practice to disable this
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
 class Trade(db.Model):
- id = db.Column(db.Integer, primary_key=True)
- symbol = db.Column(db.String(10))
- quantity = db.Column(db.Integer)
- price = db.Column(db.Float)
+    id = db.Column(db.Integer, primary_key=True)
+    symbol = db.Column(db.String(10))
+    quantity = db.Column(db.Integer)
+    price = db.Column(db.Float)
 
- def to_dict(self):
-     return {"id": self.id, "symbol": self.symbol, "quantity": self.quantity, "price": self.price}
+    def to_dict(self):
+        return {"id": self.id, "symbol": self.symbol, "quantity": self.quantity, "price": self.price}
 
-# --- NEW: CLI command to create tables ---
 @app.cli.command("create-db")
 def create_db_command():
-    """Creates the database tables."""
     db.create_all()
     print("Database tables created successfully!")
-# --- END NEW ---
 
-@app.route("/trades", methods=["GET"])
+# Added a health check - good for Traefik to verify the container is up
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "healthy"}), 200
+
+# Note: I added /api to the routes to match your Traefik PathPrefix
+@app.route("/api/trades", methods=["GET"])
 def get_trades():
- trades = Trade.query.all()
- return jsonify([t.to_dict() for t in trades])
+    trades = Trade.query.all()
+    return jsonify([t.to_dict() for t in trades])
 
-@app.route("/trades", methods=["POST"])
+@app.route("/api/trades", methods=["POST"])
 def add_trade():
- data = request.json
- t = Trade(symbol=data["symbol"], quantity=data["quantity"], price=data["price"])
- db.session.add(t)
- db.session.commit()
- return jsonify(t.to_dict()), 201
+    data = request.json
+    t = Trade(symbol=data["symbol"], quantity=data["quantity"], price=data["price"])
+    db.session.add(t)
+    db.session.commit()
+    return jsonify(t.to_dict()), 201
 
-# Removed: @app.before_first_request def create_tables(): ...
+if __name__ == "__main__":
+    # In Docker, you MUST listen on 0.0.0.0
+    app.run(host="0.0.0.0", port=5000)

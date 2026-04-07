@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   backend:
     build:
@@ -5,6 +7,9 @@ services:
       dockerfile: Dockerfile
     container_name: mastrade-backend
     restart: unless-stopped
+    volumes:
+      # Persistent storage for your SQLite database
+      - ./backend_data:/data
     environment:
       - DATABASE_URL=sqlite:////data/mastrade.db
       - FLASK_ENV=production
@@ -12,34 +17,39 @@ services:
       - solfun_default
     labels:
       - "traefik.enable=true"
-      # Routes any traffic hitting trade.flowmarket.io/api to this container
+      # Route requests for trade.flowmarket.io/api to this container
       - "traefik.http.routers.mastrade-api.rule=Host(`trade.flowmarket.io`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.mastrade-api.entrypoints=web"
-      - "traefik.http.middlewares.mastrade-strip.stripprefix.prefixes=/api"
-      - "traefik.http.routers.mastrade-api.middlewares=mastrade-strip"
+      - "traefik.http.routers.mastrade-api.entrypoints=websecure"
+      - "traefik.http.routers.mastrade-api.tls.certresolver=myresolver"
+      # Flask default port is 5000
       - "traefik.http.services.mastrade-api.loadbalancer.server.port=5000"
+      # This strips the "/api" prefix so Flask sees "/trades" instead of "/api/trades"
+      - "traefik.http.middlewares.api-strip.stripprefix.prefixes=/api"
+      - "traefik.http.routers.mastrade-api.middlewares=api-strip"
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Bake the new subdomain API path into the Next.js build
-        - NEXT_PUBLIC_API_URL=http://trade.flowmarket.io/api
+        # Build-time variable for Next.js
+        - NEXT_PUBLIC_API_URL=https://trade.flowmarket.io/api
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
-      - NEXT_PUBLIC_API_URL=http://trade.flowmarket.io/api
+      - NEXT_PUBLIC_API_URL=https://trade.flowmarket.io/api
     networks:
       - solfun_default
     labels:
       - "traefik.enable=true"
-      # Routes the main subdomain traffic here
       - "traefik.http.routers.mastrade-ui.rule=Host(`trade.flowmarket.io`)"
-      - "traefik.http.routers.mastrade-ui.entrypoints=web"
+      - "traefik.http.routers.mastrade-ui.entrypoints=websecure"
+      - "traefik.http.routers.mastrade-ui.tls.certresolver=myresolver"
+      # Next.js default port is 3000
       - "traefik.http.services.mastrade-ui.loadbalancer.server.port=3000"
 
 networks:
   solfun_default:
     external: true
+    # This matches the specific name Traefik is attached to
     name: solfun_solfun_default
