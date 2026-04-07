@@ -42,3 +42,4 @@ services:
 networks:
   solfun_default:
     external: true
+    name: solfun_solfun_default
