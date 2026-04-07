@@ -18,16 +18,14 @@ services:
       - ./backend/data:/data
       - ./backend/logs:/app/logs
     networks:
-      - solfun_default
-    expose:
-      - 5000
+      - solfun_default # Just the name here
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mastrade-backend.rule=Host(`72.62.82.1`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.mastrade-backend.entrypoints=web"
-      - "traefik.http.middlewares.mastrade-stripprefix.stripprefix.prefixes=/api"
-      - "traefik.http.routers.mastrade-backend.middlewares=mastrade-stripprefix"
-      - "traefik.http.services.mastrade-backend.loadbalancer.server.port=5000"
+      - "traefik.http.routers.mastrade-api.rule=Host(`72.62.82.1`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.mastrade-api.entrypoints=web"
+      - "traefik.http.middlewares.mastrade-strip.stripprefix.prefixes=/api"
+      - "traefik.http.routers.mastrade-api.middlewares=mastrade-strip"
+      - "traefik.http.services.mastrade-api.loadbalancer.server.port=5000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/trades"]
       interval: 30s
@@ -66,6 +64,5 @@ services:
       start_period: 40s
 
 networks:
-  mastrade-net:
+  solfun_default:
     external: true
-    name: solfun_default # Or whatever 'docker network ls' shows for your first app
