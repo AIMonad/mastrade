@@ -1,4 +1,63 @@
+"use client"
+
 import Image from "next/image";
+import { useEffect, useState } from 'react';
+
+export function OpenClawChat() {
+  const [messages, setMessages] = useState("");
+  const [status, setStatus] = useState("Disconnected");
+
+  const startChat = () => {
+    // Connect to the public bridge port we verified in your browser
+    const ws = new WebSocket('ws://72.62.82.1:18000/');
+
+    ws.onopen = () => {
+      setStatus("Connected");
+      // 1. Send Auth
+      ws.send(JSON.stringify({
+        type: "auth",
+        token: "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb"
+      }));
+
+      // 2. Send Task
+      ws.send(JSON.stringify({
+        type: "call",
+        method: "agents.chat",
+        params: {
+          message: "What is the SOL price on gmgn?",
+          agentId: "default"
+        }
+      }));
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "chunk") {
+        setMessages((prev) => prev + data.params.content);
+      }
+      if (data.type === "done") {
+        setStatus("Finished");
+      }
+    };
+
+    ws.onclose = () => setStatus("Disconnected");
+  };
+
+  return (
+    <div className="p-4">
+      <div className="mb-4">Status: <b>{status}</b></div>
+      <button 
+        onClick={startChat}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Check SOL Price
+      </button>
+      <div className="mt-4 p-4 bg-black text-green-400 font-mono whitespace-pre-wrap">
+        {messages || "No data yet..."}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -16,6 +75,7 @@ export default function Home() {
           <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
             To get started, edit the page.tsx file.
           </h1>
+          <OpenClawChat />
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Looking for a starting point or more instructions? Head over to{" "}
             <a
