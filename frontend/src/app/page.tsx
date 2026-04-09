@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import CryptoJS from "crypto-js"; // Import for signing
+import CryptoJS from "crypto-js";
 
 export function OpenClawChat() {
   const [messages, setMessages] = useState("");
@@ -9,8 +9,11 @@ export function OpenClawChat() {
 
   const startChat = () => {
     setMessages("");
+    // Ensure this matches your VPS endpoint
     const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
-    const GATEWAY_TOKEN = "18f46a17445ecccf1e044cb8528058cf818de7680bf88a78";
+    
+    // Updated to match the new gateway.auth.token we set on the server
+    const GATEWAY_TOKEN = "mastrade_secure_vps_2026";
 
     ws.onopen = () => {
       setStatus("Connected. Waiting for challenge...");
@@ -27,12 +30,9 @@ export function OpenClawChat() {
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        // 1. Generate a stable but unique ID for this browser session
-        const deviceId = CryptoJS.MD5(GATEWAY_TOKEN)
-          .toString()
-          .substring(0, 12);
+        // Using a clean, static ID for this specific token's first registration
+        const deviceId = "vps-deploy-client";
 
-        // 2. Update the ws.send params to use it:
         ws.send(
           JSON.stringify({
             type: "req",
@@ -48,7 +48,7 @@ export function OpenClawChat() {
                 mode: "webchat",
               },
               device: {
-                id: deviceId, // <--- CHANGED FROM "mastrade-vps-node"
+                id: deviceId,
                 publicKey: GATEWAY_TOKEN,
                 signedAt: now,
                 nonce: data.payload.nonce,
@@ -58,11 +58,10 @@ export function OpenClawChat() {
                 token: GATEWAY_TOKEN,
               },
             },
-          }),
+          })
         );
       }
 
-      // 2. Handle the successful connection response
       if (data.type === "res" && data.ok) {
         setStatus("Authenticated. Calling Agent...");
 
@@ -75,11 +74,10 @@ export function OpenClawChat() {
               message: "What is the SOL price on gmgn?",
               agentId: "default",
             },
-          }),
+          })
         );
       }
 
-      // 3. Handle Streaming Data
       if (data.type === "chunk" || data.event === "agent.message.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
@@ -103,7 +101,7 @@ export function OpenClawChat() {
       </div>
       <button
         onClick={startChat}
-        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg"
+        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg hover:bg-blue-700 transition-colors"
       >
         Check SOL Price
       </button>
