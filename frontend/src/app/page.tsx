@@ -35,12 +35,11 @@ export function OpenClawChat() {
       minProtocol: 3,
       maxProtocol: 3,
       client: {
-        // We know this ID works (the error for it disappeared earlier)
         id: "openclaw-control-ui", 
         version: "1.0.0",
         platform: "web",
-        // 'service' is the most common pair for the control-ui ID
-        mode: "service" 
+        // 'desktop' is the high-privilege constant for this ID
+        mode: "desktop" 
       },
       device: {
         id: "mastrade-vps-node",
