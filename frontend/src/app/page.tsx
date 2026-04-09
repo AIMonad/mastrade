@@ -26,14 +26,13 @@ export function OpenClawChat() {
     const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
 
     ws.onopen = () => {
-      setStatus("Connected. Sending Naked Handshake...");
+      setStatus("Connected. Authenticating...");
     };
 
     ws.onmessage = (event) => {
       const data: WSResponse = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // 1. NAKED HANDSHAKE + SCOPE REQUEST
       if (data.event === "connect.challenge") {
         ws.send(
           JSON.stringify({
@@ -51,15 +50,12 @@ export function OpenClawChat() {
               },
               auth: {
                 token: GATEWAY_TOKEN,
-                // Requesting the missing scope specifically here
-                scopes: ["operator.write", "operator.read"] 
               },
             },
           })
         );
       }
 
-      // 2. CHAT SEND
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated! Sending query...");
         ws.send(
@@ -76,12 +72,10 @@ export function OpenClawChat() {
         );
       }
 
-      // 3. ERROR HANDLING
       if (data.ok === false && data.error) {
         setStatus(`Error: ${data.error.message}`);
       }
 
-      // 4. STREAMING
       if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
@@ -98,10 +92,10 @@ export function OpenClawChat() {
   return (
     <div className="p-4 w-full max-w-2xl">
       <div className="mb-4">Status: <b>{status}</b></div>
-      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded">
+      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded shadow-md">
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap">
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap border border-zinc-700">
         {messages || "Terminal ready..."}
       </div>
     </div>
