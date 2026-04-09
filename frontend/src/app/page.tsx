@@ -21,37 +21,36 @@ export function OpenClawChat() {
       console.log("WS Received:", data);
 
       if (data.event === "connect.challenge") {
-        setStatus("Signing Challenge...");
+  setStatus("Signing Challenge...");
 
-        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
-        const signature = CryptoJS.enc.Hex.stringify(hash);
+  const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+  const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        ws.send(
-          JSON.stringify({
-            type: "req",
-            id: "auth-v3",
-            method: "connect",
-            params: {
-              minProtocol: 3,
-              maxProtocol: 3,
-              client: {
-                // 'open-claw-js' is the strict constant for the 2026 JS SDK
-                id: "open-claw-js",
-                version: "1.0.0",
-                platform: "web",
-                // 'prod' is the expected constant over 'production'
-                mode: "prod",
-              },
-              auth: {
-                token: GATEWAY_TOKEN,
-                // Nonce and Signature moved here
-                nonce: data.payload.nonce,
-                signature: signature,
-              },
-            },
-          }),
-        );
+  ws.send(JSON.stringify({
+    type: "req",
+    id: "auth-v3",
+    method: "connect",
+    params: {
+      minProtocol: 3,
+      maxProtocol: 3,
+      client: {
+        // 'web-sdk' and 'production' are the two most common 'anyOf' constants
+        id: "web-sdk", 
+        version: "1.0.0",
+        platform: "web",
+        mode: "production" 
+      },
+      // Trying the 'challenge' sub-object structure
+      challenge: {
+        nonce: data.payload.nonce,
+        signature: signature
+      },
+      auth: {
+        token: GATEWAY_TOKEN
       }
+    }
+  }));
+}
 
       // 2. Handle the successful connection response
       if (data.type === "res" && data.ok) {
