@@ -10,7 +10,7 @@ export function OpenClawChat() {
   const startChat = () => {
     setMessages("");
     const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
-    const GATEWAY_TOKEN = "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb";
+    const GATEWAY_TOKEN = "18f46a17445ecccf1e044cb8528058cf818de7680bf88a78";
 
     ws.onopen = () => {
       setStatus("Connected. Waiting for challenge...");
