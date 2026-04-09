@@ -20,7 +20,6 @@ export function OpenClawChat() {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // 1. The Naked Handshake that worked earlier
       if (data.event === "connect.challenge") {
         ws.send(
           JSON.stringify({
@@ -44,7 +43,6 @@ export function OpenClawChat() {
         );
       }
 
-      // 2. The Chat Request
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated! Sending query...");
         ws.send(
@@ -61,7 +59,6 @@ export function OpenClawChat() {
         );
       }
 
-      // 3. Simple Error/Chunk Handling
       if (data.ok === false) {
         setStatus(`Error: ${data.error.message}`);
       }
@@ -88,7 +85,7 @@ export function OpenClawChat() {
       >
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap">
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap border border-zinc-700">
         {messages || "Terminal ready..."}
       </div>
     </div>
