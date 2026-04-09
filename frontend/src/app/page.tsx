@@ -30,8 +30,8 @@ export function OpenClawChat() {
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        // Using a clean, static ID for this specific token's first registration
-        const deviceId = "vps-deploy-client";
+        // Randomize the deviceId to force a fresh identity record on the server
+        const deviceId = "client-" + Math.random().toString(36).substring(2, 10);
 
         ws.send(
           JSON.stringify({
