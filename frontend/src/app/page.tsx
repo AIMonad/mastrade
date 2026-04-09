@@ -7,8 +7,8 @@ export function OpenClawChat() {
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
 
-  // This must match the token in your ~/.openclaw/openclaw.json
-  const GATEWAY_TOKEN = "CLEAN_START_TOKEN";
+  // Ensure this matches your ~/.openclaw/openclaw.json exactly
+  const GATEWAY_TOKEN = "CLEAN_START_TOKEN"; 
 
   const startChat = () => {
     setMessages("");
@@ -22,21 +22,18 @@ export function OpenClawChat() {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // 1. Handle the Auth Challenge (Elevating to Write Access)
+      // --- AUTHENTICATION SECTION ---
       if (data.event === "connect.challenge") {
-        setStatus("Signing Handshake (Write Access)...");
+        setStatus("Authenticating (Requesting Write Access)...");
 
         const now = Date.now();
-        const GATEWAY_TOKEN = "CLEAN_START_TOKEN";
-
-        // Provenance Signature: Required for 'operator.write' scope
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        // A fresh ID for a fresh server state
+        // PLACE THE DEVICE ID HERE
+        // If you get a mismatch error again, change this string to "admin-console-v100"
+        const deviceId = "admin-console-v99"; 
 
-        // 2. Use a TOTALLY NEW ID (do not use vps-operator-1 again)
-        const deviceId = "master-console-final";
         ws.send(
           JSON.stringify({
             type: "req",
@@ -52,7 +49,7 @@ export function OpenClawChat() {
                 mode: "webchat",
               },
               device: {
-                id: deviceId,
+                id: deviceId, 
                 publicKey: GATEWAY_TOKEN,
                 signedAt: now,
                 nonce: data.payload.nonce,
@@ -62,13 +59,13 @@ export function OpenClawChat() {
                 token: GATEWAY_TOKEN,
               },
             },
-          }),
+          })
         );
       }
 
-      // 2. Handle successful Auth -> Trigger Chat
+      // --- CHAT INITIATION SECTION ---
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
-        setStatus("Authenticated. Calling Agent...");
+        setStatus("Authenticated! Sending query...");
 
         ws.send(
           JSON.stringify({
@@ -77,25 +74,21 @@ export function OpenClawChat() {
             method: "chat.send",
             params: {
               message: "What is the SOL price on gmgn?",
-              agentId: "main",
+              agentId: "main", // Verified as the default from your logs
               stream: true,
             },
-          }),
+          })
         );
       }
 
-      // 3. Handle Errors (Scope/Identity)
+      // --- ERROR HANDLING ---
       if (data.ok === false) {
         console.error("OpenClaw Error:", data.error);
         setStatus(`Error: ${data.error.message}`);
       }
 
-      // 4. Handle Streaming Response
-      if (
-        data.type === "chunk" ||
-        data.event === "agent.message.chunk" ||
-        data.event === "chat.chunk"
-      ) {
+      // --- MESSAGE STREAMING ---
+      if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
       }
@@ -113,16 +106,16 @@ export function OpenClawChat() {
 
   return (
     <div className="p-4 w-full max-w-2xl">
-      <div className="mb-4">
-        Status: <b>{status}</b>
+      <div className="mb-4 text-zinc-800 dark:text-zinc-200">
+        Status: <span className="font-bold text-blue-500">{status}</span>
       </div>
       <button
         onClick={startChat}
-        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg hover:bg-blue-700 transition-colors"
+        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg hover:bg-blue-700 transition-colors font-medium"
       >
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700">
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700 shadow-inner">
         {messages || "Terminal ready..."}
       </div>
     </div>
@@ -131,7 +124,7 @@ export function OpenClawChat() {
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black p-4">
       <OpenClawChat />
     </div>
   );
