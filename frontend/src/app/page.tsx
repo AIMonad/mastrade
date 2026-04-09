@@ -23,45 +23,40 @@ export function OpenClawChat() {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // 1. Handle the Security Challenge
+      // 1. When we see the challenge, we send the "connect" request
       if (data.event === "connect.challenge") {
-        setStatus("Solving Challenge...");
+        setStatus("Handshaking...");
         
-        // Send the response
         ws.send(JSON.stringify({
-          type: "event",
-          event: "connect.challenge.response",
-          payload: {
+          type: "req",               // OpenClaw requires 'req' for handshakes
+          id: "handshake-1",         // Standard request ID
+          method: "connect",         // The method MUST be 'connect'
+          params: {
+            token: "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb",
             nonce: data.payload.nonce,
-            answer: data.payload.nonce 
+            protocol: 3              // Current OpenClaw protocol version
           }
         }));
-
-        // 2. WAIT 500ms before sending the actual request
-        // This prevents the 'invalid request frame' (1008) caused by flooding
-        setTimeout(() => {
-          if (ws.readyState === WebSocket.OPEN) {
-            setStatus("Fetching Price...");
-            ws.send(JSON.stringify({
-              type: "call",
-              method: "agents.chat",
-              params: {
-                message: "What is the SOL price on gmgn?",
-                agentId: "default"
-              }
-            }));
-          }
-        }, 500); 
       }
 
-      // 3. Data handling
+      // 2. Wait for the 'hello-ok' response before sending the chat call
+      if (data.type === "res" && data.ok && data.payload?.type === "hello-ok") {
+        setStatus("Fetching Price...");
+        ws.send(JSON.stringify({
+          type: "req",               // Use 'req' here too
+          id: "chat-1",
+          method: "agents.chat",
+          params: {
+            message: "What is the SOL price on gmgn?",
+            agentId: "default"
+          }
+        }));
+      }
+
+      // 3. Handle data chunks
       if (data.type === "chunk" || data.event === "agent.message.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
-      }
-
-      if (data.type === "done" || data.event === "agent.message.done") {
-        setStatus("Finished");
       }
     };
 
