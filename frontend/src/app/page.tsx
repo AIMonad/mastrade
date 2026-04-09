@@ -49,17 +49,19 @@ export function OpenClawChat() {
         );
       }
 
-      if (data.type === "res" && data.ok) {
+      // 2. Handle the successful connection response
+      if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated. Calling Agent...");
 
         ws.send(
           JSON.stringify({
             type: "req",
             id: "chat-query",
-            method: "agents.chat",
+            method: "chat.send", // <--- CHANGED from agents.chat
             params: {
               message: "What is the SOL price on gmgn?",
-              agentId: "default",
+              agentId: "main", // <--- CHANGED from default to main
+              stream: true, // Ensures you get the "chunk" events we handled earlier
             },
           }),
         );
