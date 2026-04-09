@@ -1,22 +1,21 @@
-FROM node:20-slim 
-# Slim is better for low-memory VPS
+FROM node:20
 
 WORKDIR /app
 
-# Install essential build tools (sometimes needed for crypto libs)
-RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+# 1. Disable SSL strictness temporarily if your VPS has clock/cert issues
+# and set a massive timeout for slow networks
+RUN npm config set strict-ssl false && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 120000
 
 COPY package.json package-lock.json* ./
 
-# Install with flags to save memory and ensure binaries are linked
-RUN npm install --no-audit --no-fund --loglevel=error
+# 2. Install with 'verbose' so we can see EXACTLY where it hangs in the logs
+RUN npm install --loglevel verbose
 
 COPY . .
 
-# Set environment
-ENV NODE_ENV=production
-
-# Use 'npx' which is smarter at finding the local 'next' binary
+# 3. Use 'npx' to find the binary regardless of pathing
 RUN npx next build
 
 EXPOSE 3000

@@ -31,9 +31,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      args:
-        # Build-time variable for Next.js
+      args: # Moved inside 'build'
         - NEXT_PUBLIC_API_URL=https://trade.flowmarket.io/api
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     container_name: mastrade-frontend
     restart: unless-stopped
     environment:
@@ -45,9 +47,8 @@ services:
       - "traefik.http.routers.mastrade-ui.rule=Host(`trade.flowmarket.io`)"
       - "traefik.http.routers.mastrade-ui.entrypoints=websecure"
       - "traefik.http.routers.mastrade-ui.tls.certresolver=myresolver"
-      # Next.js default port is 3000
       - "traefik.http.services.mastrade-ui.loadbalancer.server.port=3000"
-  
+      
   openclaw-proxy:
     image: nginx:alpine
     container_name: openclaw-proxy
