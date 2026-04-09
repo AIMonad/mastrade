@@ -39,7 +39,7 @@ export function OpenClawChat() {
         version: "1.0.0",
         platform: "web",
         // 'bridge' is the specific constant for intermediary web apps
-        mode: "bridge" 
+        mode: "gateway" 
       },
       device: {
         id: "mastrade-vps-node",
