@@ -35,17 +35,22 @@ export function OpenClawChat() {
               minProtocol: 3,
               maxProtocol: 3,
               client: {
-                id: "openclaw-control-ui",
-                version: "1.0.0",
+                // 'webchat-ui' is the exact constant for the integrated trading dashboard
+                id: "webchat-ui",
+                version: "3.0",
                 platform: "web",
-                // 'managed' is the specific constant for authenticated API sessions
-                mode: "managed",
+                // 'browser' is the strict mode for web-based operators
+                mode: "browser",
+              },
+              // In the new schema, security tokens live here
+              device: {
+                id: "mastrade-vps-node",
+                name: "MasTrade VPS",
+                nonce: data.payload.nonce,
+                signature: signature,
               },
               auth: {
                 token: GATEWAY_TOKEN,
-                // Flat inside auth - this is the 2026 'Secure-Auth' pattern
-                nonce: data.payload.nonce,
-                signature: signature,
               },
             },
           }),
