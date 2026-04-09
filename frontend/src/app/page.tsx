@@ -23,35 +23,34 @@ export function OpenClawChat() {
       // 1. Handle the connect.challenge
       // 1. When we see the challenge, we send the new v3 handshake
       if (data.event === "connect.challenge") {
-        setStatus("Signing Challenge...");
+  setStatus("Signing Challenge...");
 
-        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
-        const signature = CryptoJS.enc.Hex.stringify(hash);
+  const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+  const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        ws.send(
-          JSON.stringify({
-            type: "req",
-            id: "auth-v3",
-            method: "connect",
-            params: {
-              minProtocol: 3,
-              maxProtocol: 3,
-              // 1. 'client' must be an object
-              client: {
-                id: "mastrade-web-client",
-                version: "1.0.0",
-              },
-              // 2. 'nonce' and 'signature' moved back to top level
-              nonce: data.payload.nonce,
-              signature: signature,
-              // 3. 'auth' only contains the token
-              auth: {
-                token: GATEWAY_TOKEN,
-              },
-            },
-          }),
-        );
+  ws.send(JSON.stringify({
+    type: "req",
+    id: "auth-v3",
+    method: "connect",
+    params: {
+      minProtocol: 3,
+      maxProtocol: 3,
+      client: {
+        // 'id' must be 'openclaw-web-sdk' (the common constant for JS clients)
+        id: "openclaw-web-sdk", 
+        version: "1.0.0",
+        platform: "web",
+        mode: "production",
+        // Nonce and Signature go inside 'client'
+        nonce: data.payload.nonce,
+        signature: signature
+      },
+      auth: {
+        token: GATEWAY_TOKEN
       }
+    }
+  }));
+}
 
       // 2. Handle the successful connection response
       if (data.type === "res" && data.ok) {
