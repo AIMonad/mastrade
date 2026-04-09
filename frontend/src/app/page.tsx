@@ -18,6 +18,7 @@ export function OpenClawChat() {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
+      // 1. Naked Handshake (Clean Version)
       if (data.event === "connect.challenge") {
         ws.send(
           JSON.stringify({
@@ -33,8 +34,6 @@ export function OpenClawChat() {
                 platform: "web",
                 mode: "webchat",
               },
-              // SCOPE AS A STRING: This is the specific requirement for v3 token-elevation
-              scope: "operator.read operator.write", 
               auth: {
                 token: GATEWAY_TOKEN
               }
@@ -43,6 +42,7 @@ export function OpenClawChat() {
         );
       }
 
+      // 2. Message Send
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated! Sending query...");
         ws.send(
@@ -59,10 +59,7 @@ export function OpenClawChat() {
         );
       }
 
-      if (data.ok === false) {
-        setStatus(`Error: ${data.error.message}`);
-        console.error("Gateway Error Details:", data.error);
-      }
+      if (data.ok === false) setStatus(`Error: ${data.error.message}`);
 
       if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
