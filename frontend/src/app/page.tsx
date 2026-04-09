@@ -7,7 +7,7 @@ export function OpenClawChat() {
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
 
-  // Ensure this matches your ~/.openclaw/openclaw.json exactly
+  // This must match your ~/.openclaw/openclaw.json exactly
   const GATEWAY_TOKEN = "CLEAN_START_TOKEN"; 
 
   const startChat = () => {
@@ -24,15 +24,15 @@ export function OpenClawChat() {
 
       // --- AUTHENTICATION SECTION ---
       if (data.event === "connect.challenge") {
-        setStatus("Authenticating (Requesting Write Access)...");
+        setStatus("Authenticating (Write Access)...");
 
         const now = Date.now();
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        // PLACE THE DEVICE ID HERE
-        // If you get a mismatch error again, change this string to "admin-console-v100"
-        const deviceId = "admin-console-v99"; 
+        // GENERATING A GUARANTEED UNIQUE ID
+        // This prevents the "identity mismatch" by making every attempt a new device.
+        const deviceId = `console-dev-${Math.floor(Date.now() / 1000)}`; 
 
         ws.send(
           JSON.stringify({
@@ -63,10 +63,9 @@ export function OpenClawChat() {
         );
       }
 
-      // --- CHAT INITIATION SECTION ---
+      // --- CHAT INITIATION ---
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated! Sending query...");
-
         ws.send(
           JSON.stringify({
             type: "req",
@@ -74,7 +73,7 @@ export function OpenClawChat() {
             method: "chat.send",
             params: {
               message: "What is the SOL price on gmgn?",
-              agentId: "main", // Verified as the default from your logs
+              agentId: "main", 
               stream: true,
             },
           })
@@ -84,7 +83,7 @@ export function OpenClawChat() {
       // --- ERROR HANDLING ---
       if (data.ok === false) {
         console.error("OpenClaw Error:", data.error);
-        setStatus(`Error: ${data.error.message}`);
+        setStatus(`Error: ${data.error.message} (${data.error.code})`);
       }
 
       // --- MESSAGE STREAMING ---
@@ -99,14 +98,13 @@ export function OpenClawChat() {
     };
 
     ws.onclose = (e) => {
-      console.log("WS Closed:", e.code, e.reason);
       setStatus(`Disconnected (${e.code})`);
     };
   };
 
   return (
     <div className="p-4 w-full max-w-2xl">
-      <div className="mb-4 text-zinc-800 dark:text-zinc-200">
+      <div className="mb-4">
         Status: <span className="font-bold text-blue-500">{status}</span>
       </div>
       <button
@@ -115,7 +113,7 @@ export function OpenClawChat() {
       >
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700 shadow-inner">
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700">
         {messages || "Terminal ready..."}
       </div>
     </div>
