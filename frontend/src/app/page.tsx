@@ -21,43 +21,39 @@ export function OpenClawChat() {
       console.log("WS Received:", data);
 
       if (data.event === "connect.challenge") {
-  setStatus("Signing Challenge...");
+        setStatus("Signing Challenge...");
 
-  const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
-  const signature = CryptoJS.enc.Hex.stringify(hash);
+        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+        const signature = CryptoJS.enc.Hex.stringify(hash);
 
-  if (data.event === "connect.challenge") {
-  setStatus("Signing Challenge...");
-
-  const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
-  const signature = CryptoJS.enc.Hex.stringify(hash);
-
-  ws.send(JSON.stringify({
-    type: "req",
-    id: "auth-v3",
-    method: "connect",
-    params: {
-      minProtocol: 3,
-      maxProtocol: 3,
-      client: {
-        // 'openclaw-control-ui' is the primary whitelisted constant for web clients
-        id: "openclaw-control-ui", 
-        version: "1.0.0",
-        platform: "web",
-        // 'vps' or 'headless' are common mode constants for remote hosts
-        mode: "headless" 
-      },
-      // In v3, challenge is a sibling to client and auth
-      challenge: {
-        nonce: data.payload.nonce,
-        signature: signature
-      },
-      auth: {
-        token: GATEWAY_TOKEN
+        ws.send(
+          JSON.stringify({
+            type: "req",
+            id: "auth-v3",
+            method: "connect",
+            params: {
+              minProtocol: 3,
+              maxProtocol: 3,
+              client: {
+                // 'openclaw-control-ui' is the primary whitelisted constant for web clients
+                id: "openclaw-control-ui",
+                version: "1.0.0",
+                platform: "web",
+                // 'vps' or 'headless' are common mode constants for remote hosts
+                mode: "headless",
+              },
+              // In v3, challenge is a sibling to client and auth
+              challenge: {
+                nonce: data.payload.nonce,
+                signature: signature,
+              },
+              auth: {
+                token: GATEWAY_TOKEN,
+              },
+            },
+          }),
+        );
       }
-    }
-  }));
-}
 
       // 2. Handle the successful connection response
       if (data.type === "res" && data.ok) {
