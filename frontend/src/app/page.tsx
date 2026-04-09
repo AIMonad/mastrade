@@ -11,9 +11,6 @@ export function OpenClawChat() {
     setMessages("");
     // Ensure this matches your VPS endpoint
     const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
-    
-    // Updated to match the new gateway.auth.token we set on the server
-    const GATEWAY_TOKEN = "mastrade_secure_vps_2026";
 
     ws.onopen = () => {
       setStatus("Connected. Waiting for challenge...");
@@ -23,44 +20,37 @@ export function OpenClawChat() {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      if (data.event === "connect.challenge") {
-        setStatus("Finalizing Secure Handshake...");
+      // ... inside startChat ...
+const GATEWAY_TOKEN = "OPENCLAW_FRESH_2026";
 
-        const now = Date.now();
-        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
-        const signature = CryptoJS.enc.Hex.stringify(hash);
+if (data.event === "connect.challenge") {
+    const now = Date.now();
+    const signature = CryptoJS.enc.Hex.stringify(
+        CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN)
+    );
 
-        // Randomize the deviceId to force a fresh identity record on the server
-        const deviceId = "client-" + Math.random().toString(36).substring(2, 10);
+    // This ensures a fresh identity on every fresh page load
+    const deviceId = "web-" + Math.random().toString(36).substring(2, 10);
 
-        ws.send(
-          JSON.stringify({
-            type: "req",
-            id: "auth-v3",
-            method: "connect",
-            params: {
-              minProtocol: 3,
-              maxProtocol: 3,
-              client: {
-                id: "webchat-ui",
-                version: "3.0",
-                platform: "web",
-                mode: "webchat",
-              },
-              device: {
+    ws.send(JSON.stringify({
+        type: "req",
+        id: "auth-v3",
+        method: "connect",
+        params: {
+            minProtocol: 3,
+            maxProtocol: 3,
+            client: { id: "webchat-ui", version: "3.0", platform: "web", mode: "webchat" },
+            device: {
                 id: deviceId,
                 publicKey: GATEWAY_TOKEN,
                 signedAt: now,
                 nonce: data.payload.nonce,
                 signature: signature,
-              },
-              auth: {
-                token: GATEWAY_TOKEN,
-              },
             },
-          })
-        );
-      }
+            auth: { token: GATEWAY_TOKEN }
+        }
+    }));
+}
 
       if (data.type === "res" && data.ok) {
         setStatus("Authenticated. Calling Agent...");
