@@ -27,6 +27,12 @@ export function OpenClawChat() {
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
+        // 1. Generate a stable but unique ID for this browser session
+        const deviceId = CryptoJS.MD5(GATEWAY_TOKEN)
+          .toString()
+          .substring(0, 12);
+
+        // 2. Update the ws.send params to use it:
         ws.send(
           JSON.stringify({
             type: "req",
@@ -36,13 +42,13 @@ export function OpenClawChat() {
               minProtocol: 3,
               maxProtocol: 3,
               client: {
-        id: "webchat-ui", 
-        version: "3.0",
-        platform: "web",
-        mode: "webchat" 
-      },
+                id: "webchat-ui",
+                version: "3.0",
+                platform: "web",
+                mode: "webchat",
+              },
               device: {
-                id: "mastrade-vps-node",
+                id: deviceId, // <--- CHANGED FROM "mastrade-vps-node"
                 publicKey: GATEWAY_TOKEN,
                 signedAt: now,
                 nonce: data.payload.nonce,
