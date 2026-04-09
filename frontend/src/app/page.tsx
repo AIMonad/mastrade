@@ -27,13 +27,16 @@ export function OpenClawChat() {
         setStatus("Signing Handshake (Write Access)...");
 
         const now = Date.now();
+        const GATEWAY_TOKEN = "CLEAN_START_TOKEN";
+
         // Provenance Signature: Required for 'operator.write' scope
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
         // A fresh ID for a fresh server state
-        const deviceId = "vps-operator-1";
 
+        // 2. Use a TOTALLY NEW ID (do not use vps-operator-1 again)
+        const deviceId = "master-console-final";
         ws.send(
           JSON.stringify({
             type: "req",
@@ -59,7 +62,7 @@ export function OpenClawChat() {
                 token: GATEWAY_TOKEN,
               },
             },
-          })
+          }),
         );
       }
 
@@ -71,13 +74,13 @@ export function OpenClawChat() {
           JSON.stringify({
             type: "req",
             id: "chat-query",
-            method: "chat.send", 
+            method: "chat.send",
             params: {
               message: "What is the SOL price on gmgn?",
-              agentId: "main", 
+              agentId: "main",
               stream: true,
             },
-          })
+          }),
         );
       }
 
@@ -88,7 +91,11 @@ export function OpenClawChat() {
       }
 
       // 4. Handle Streaming Response
-      if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
+      if (
+        data.type === "chunk" ||
+        data.event === "agent.message.chunk" ||
+        data.event === "chat.chunk"
+      ) {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
       }
