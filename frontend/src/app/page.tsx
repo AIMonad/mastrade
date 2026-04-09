@@ -13,10 +13,6 @@ export function OpenClawChat() {
 
     ws.onopen = () => {
       setStatus("Authenticating...");
-      ws.send(JSON.stringify({
-        type: "auth",
-        token: "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb"
-      }));
     };
 
     ws.onmessage = (event) => {
