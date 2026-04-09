@@ -9,7 +9,7 @@ export function OpenClawChat() {
 
   const startChat = () => {
     // Connect to the public bridge port we verified in your browser
-    const ws = new WebSocket('ws://72.62.82.1:18000/');
+    const ws = new WebSocket('wss://72.62.82.1:18000/');
 
     ws.onopen = () => {
       setStatus("Connected");
