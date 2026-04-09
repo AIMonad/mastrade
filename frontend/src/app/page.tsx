@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-// Define basic interface for the WS data to satisfy TS
 interface WSResponse {
   type?: string;
   event?: string;
@@ -20,7 +19,6 @@ export function OpenClawChat() {
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
 
-  // Ensure this matches your VPS config
   const GATEWAY_TOKEN = "CLEAN_START_TOKEN"; 
 
   const startChat = () => {
@@ -35,7 +33,7 @@ export function OpenClawChat() {
       const data: WSResponse = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // 1. THE BYPASS: Naked Handshake (No device block)
+      // 1. NAKED HANDSHAKE + SCOPE REQUEST
       if (data.event === "connect.challenge") {
         ws.send(
           JSON.stringify({
@@ -53,13 +51,15 @@ export function OpenClawChat() {
               },
               auth: {
                 token: GATEWAY_TOKEN,
+                // Requesting the missing scope specifically here
+                scopes: ["operator.write", "operator.read"] 
               },
             },
           })
         );
       }
 
-      // 2. Trigger Chat on Auth Success
+      // 2. CHAT SEND
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated! Sending query...");
         ws.send(
@@ -76,12 +76,12 @@ export function OpenClawChat() {
         );
       }
 
-      // 3. Error Handling
+      // 3. ERROR HANDLING
       if (data.ok === false && data.error) {
         setStatus(`Error: ${data.error.message}`);
       }
 
-      // 4. Stream Results
+      // 4. STREAMING
       if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
@@ -97,23 +97,17 @@ export function OpenClawChat() {
 
   return (
     <div className="p-4 w-full max-w-2xl">
-      <div className="mb-4 text-zinc-800 dark:text-zinc-200">
-        Status: <span className="font-bold text-blue-500">{status}</span>
-      </div>
-      <button
-        onClick={startChat}
-        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg hover:bg-blue-700 transition-colors"
-      >
+      <div className="mb-4">Status: <b>{status}</b></div>
+      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded">
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700 shadow-inner">
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap">
         {messages || "Terminal ready..."}
       </div>
     </div>
   );
 }
 
-// CRITICAL: This default export fixes the Next.js build error
 export default function Page() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black p-4">
