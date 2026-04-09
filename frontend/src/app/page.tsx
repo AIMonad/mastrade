@@ -36,12 +36,11 @@ export function OpenClawChat() {
               minProtocol: 3,
               maxProtocol: 3,
               client: {
-                id: "openclaw-control-ui",
-                version: "1.0.0",
-                platform: "web",
-                // 'dashboard' is the specific 'anyOf' constant for the v3 web gateway
-                mode: "dashboard",
-              },
+        id: "webchat-ui", 
+        version: "3.0",
+        platform: "web",
+        mode: "webchat" 
+      },
               device: {
                 id: "mastrade-vps-node",
                 publicKey: GATEWAY_TOKEN,
