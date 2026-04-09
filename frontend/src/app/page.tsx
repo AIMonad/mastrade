@@ -26,28 +26,35 @@ export function OpenClawChat() {
       // 1. Handle the Security Challenge
       if (data.event === "connect.challenge") {
         setStatus("Solving Challenge...");
+        
+        // Send the response
         ws.send(JSON.stringify({
           type: "event",
           event: "connect.challenge.response",
           payload: {
             nonce: data.payload.nonce,
-            answer: data.payload.nonce // Usually the nonce itself for this protocol
+            answer: data.payload.nonce 
           }
         }));
 
-        // 2. NOW that we've answered the challenge, send the actual Task
-        setStatus("Fetching Price...");
-        ws.send(JSON.stringify({
-          type: "call",
-          method: "agents.chat",
-          params: {
-            message: "What is the SOL price on gmgn?",
-            agentId: "default"
+        // 2. WAIT 500ms before sending the actual request
+        // This prevents the 'invalid request frame' (1008) caused by flooding
+        setTimeout(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            setStatus("Fetching Price...");
+            ws.send(JSON.stringify({
+              type: "call",
+              method: "agents.chat",
+              params: {
+                message: "What is the SOL price on gmgn?",
+                agentId: "default"
+              }
+            }));
           }
-        }));
+        }, 500); 
       }
 
-      // 3. Handle incoming data chunks
+      // 3. Data handling
       if (data.type === "chunk" || data.event === "agent.message.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
