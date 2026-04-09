@@ -7,9 +7,11 @@ export function OpenClawChat() {
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
 
+  // This must match the token in your ~/.openclaw/openclaw.json
+  const GATEWAY_TOKEN = "CLEAN_START_TOKEN";
+
   const startChat = () => {
     setMessages("");
-    // Ensure this matches your VPS endpoint
     const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
 
     ws.onopen = () => {
@@ -20,10 +22,17 @@ export function OpenClawChat() {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // ... inside startChat ...
-
+      // 1. Handle the Auth Challenge (Elevating to Write Access)
       if (data.event === "connect.challenge") {
-        setStatus("Authenticating with Token...");
+        setStatus("Signing Handshake (Write Access)...");
+
+        const now = Date.now();
+        // Provenance Signature: Required for 'operator.write' scope
+        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+        const signature = CryptoJS.enc.Hex.stringify(hash);
+
+        // A fresh ID for a fresh server state
+        const deviceId = "vps-operator-1";
 
         ws.send(
           JSON.stringify({
@@ -39,17 +48,22 @@ export function OpenClawChat() {
                 platform: "web",
                 mode: "webchat",
               },
-              // We skip the 'device' block entirely.
-              // In local token mode, this is often the only way to avoid the mismatch error.
+              device: {
+                id: deviceId,
+                publicKey: GATEWAY_TOKEN,
+                signedAt: now,
+                nonce: data.payload.nonce,
+                signature: signature,
+              },
               auth: {
-                token: "CLEAN_START_TOKEN",
+                token: GATEWAY_TOKEN,
               },
             },
-          }),
+          })
         );
       }
 
-      // 2. Handle the successful connection response
+      // 2. Handle successful Auth -> Trigger Chat
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated. Calling Agent...");
 
@@ -57,17 +71,24 @@ export function OpenClawChat() {
           JSON.stringify({
             type: "req",
             id: "chat-query",
-            method: "chat.send", // <--- CHANGED from agents.chat
+            method: "chat.send", 
             params: {
               message: "What is the SOL price on gmgn?",
-              agentId: "main", // <--- CHANGED from default to main
-              stream: true, // Ensures you get the "chunk" events we handled earlier
+              agentId: "main", 
+              stream: true,
             },
-          }),
+          })
         );
       }
 
-      if (data.type === "chunk" || data.event === "agent.message.chunk") {
+      // 3. Handle Errors (Scope/Identity)
+      if (data.ok === false) {
+        console.error("OpenClaw Error:", data.error);
+        setStatus(`Error: ${data.error.message}`);
+      }
+
+      // 4. Handle Streaming Response
+      if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
       }
