@@ -38,14 +38,14 @@ export function OpenClawChat() {
                 id: "openclaw-control-ui",
                 version: "1.0.0",
                 platform: "web",
-                mode: "headless",
+                // 'managed' is the specific constant for authenticated API sessions
+                mode: "managed",
               },
               auth: {
                 token: GATEWAY_TOKEN,
-                challenge: {
-                  nonce: data.payload.nonce,
-                  signature: signature,
-                },
+                // Flat inside auth - this is the 2026 'Secure-Auth' pattern
+                nonce: data.payload.nonce,
+                signature: signature,
               },
             },
           }),
