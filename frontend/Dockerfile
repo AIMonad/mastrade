@@ -1,24 +1,22 @@
 FROM node:20
 
-# 1. Set working directory
 WORKDIR /app
 
-# 2. Copy dependency files first
+# Copy dependency files
 COPY package.json package-lock.json* ./
 
-# 3. Use 'install' instead of 'ci' temporarily to force-sync the new packages
-# and clear any local npm cache issues
+# Clean and install (standard install is safer here than 'ci' when changing versions)
 RUN npm cache clean --force && npm install
 
-# 4. Copy the rest of your app
+# Copy the rest of your app code
 COPY . .
 
-# 5. Explicitly set environment to production for the build
+# EXPLICITLY set the path so the container can find the 'next' command
+ENV PATH /app/node_modules/.bin:$PATH
 ENV NODE_ENV=production
 
-# 6. Run the build
-RUN npm run build
+# Run build using the absolute path to be 100% sure
+RUN ./node_modules/.bin/next build
 
-# 7. Standard ports and start command
 EXPOSE 3000
 CMD ["npm", "start"]
