@@ -21,16 +21,19 @@ export function OpenClawChat() {
       console.log("WS Received:", data);
 
       // ... inside startChat ...
-const GATEWAY_TOKEN = "OPENCLAW_FRESH_2026";
 
 if (data.event === "connect.challenge") {
     const now = Date.now();
+
+
+    const GATEWAY_TOKEN = "CLEAN_START_TOKEN";
+
+// 2. Set a FRESH device ID that has never been used
+// This is the "First Citizen" of your new database
+const deviceId = "vps-admin-primary"; 
     const signature = CryptoJS.enc.Hex.stringify(
         CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN)
     );
-
-    // This ensures a fresh identity on every fresh page load
-    const deviceId = "web-" + Math.random().toString(36).substring(2, 10);
 
     ws.send(JSON.stringify({
         type: "req",
