@@ -1,46 +1,53 @@
 "use client"
 
 import { useState } from 'react';
+import CryptoJS from 'crypto-js'; // Import for signing
 
 export function OpenClawChat() {
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
 
   const startChat = () => {
-    // Clear previous messages when starting a new check
     setMessages("");
     const ws = new WebSocket('wss://trade.flowmarket.io/openclaw');
+    const GATEWAY_TOKEN = "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb";
 
     ws.onopen = () => {
-      setStatus("Authenticating...");
+      setStatus("Connected. Waiting for challenge...");
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
-      // 1. When we see the challenge, we send the "connect" request
+      // 1. Handle the connect.challenge
       if (data.event === "connect.challenge") {
-        setStatus("Handshaking...");
-        
+        setStatus("Signing Challenge...");
+
+        // Generate HMAC-SHA256 signature of the nonce using the token
+        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+        const signature = CryptoJS.enc.Hex.stringify(hash);
+
         ws.send(JSON.stringify({
-          type: "req",               // OpenClaw requires 'req' for handshakes
-          id: "handshake-1",         // Standard request ID
-          method: "connect",         // The method MUST be 'connect'
+          type: "req",
+          id: "auth-v3",
+          method: "connect",
           params: {
-            token: "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb",
+            token: GATEWAY_TOKEN,
             nonce: data.payload.nonce,
-            protocol: 3              // Current OpenClaw protocol version
+            signature: signature, // The critical missing piece
+            protocol: 3
           }
         }));
       }
 
-      // 2. Wait for the 'hello-ok' response before sending the chat call
-      if (data.type === "res" && data.ok && data.payload?.type === "hello-ok") {
-        setStatus("Fetching Price...");
+      // 2. Handle the successful connection response
+      if (data.type === "res" && data.ok) {
+        setStatus("Authenticated. Calling Agent...");
+        
         ws.send(JSON.stringify({
-          type: "req",               // Use 'req' here too
-          id: "chat-1",
+          type: "req",
+          id: "chat-query",
           method: "agents.chat",
           params: {
             message: "What is the SOL price on gmgn?",
@@ -49,37 +56,31 @@ export function OpenClawChat() {
         }));
       }
 
-      // 3. Handle data chunks
+      // 3. Handle Streaming Data
       if (data.type === "chunk" || data.event === "agent.message.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
+      }
+
+      if (data.type === "done" || data.event === "agent.message.done") {
+        setStatus("Finished");
       }
     };
 
     ws.onclose = (e) => {
       console.log("WS Closed:", e.code, e.reason);
-      setStatus("Disconnected");
-    };
-
-    ws.onerror = (err) => {
-      console.error("WS Error:", err);
-      setStatus("Error Connecting");
+      setStatus(`Disconnected (${e.code})`);
     };
   };
 
   return (
-    <div className="p-4 w-full">
-      <div className="mb-4 text-zinc-600 dark:text-zinc-400">
-        Status: <b className="text-black dark:text-white">{status}</b>
-      </div>
-      <button 
-        onClick={startChat}
-        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-      >
+    <div className="p-4 w-full max-w-2xl">
+      <div className="mb-4">Status: <b>{status}</b></div>
+      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg">
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-800 dark:text-green-400 font-mono border border-zinc-200 dark:border-zinc-800 rounded-lg min-h-[100px] whitespace-pre-wrap">
-        {messages || "Waiting for data..."}
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700">
+        {messages || "Terminal ready..."}
       </div>
     </div>
   );
@@ -87,13 +88,8 @@ export function OpenClawChat() {
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex w-full max-w-3xl flex-col items-center justify-center py-20 px-6 bg-white dark:bg-black sm:items-start">
-        <div className="w-full">
-          <h1 className="text-2xl font-bold mb-6 text-black dark:text-white px-4">Mastrade Terminal</h1>
-          <OpenClawChat />
-        </div>
-      </main>
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black">
+      <OpenClawChat />
     </div>
   );
 }
