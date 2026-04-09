@@ -35,12 +35,12 @@ export function OpenClawChat() {
       minProtocol: 3,
       maxProtocol: 3,
       client: {
-        // 'gateway-terminal' is the high-privilege ID for trading bots
-        id: "gateway-terminal", 
-        version: "3.0",
+        // We know this ID works (the error for it disappeared earlier)
+        id: "openclaw-control-ui", 
+        version: "1.0.0",
         platform: "web",
-        // 'operator' is the most likely constant remaining in the 'anyOf' schema
-        mode: "operator" 
+        // 'service' is the most common pair for the control-ui ID
+        mode: "service" 
       },
       device: {
         id: "mastrade-vps-node",
