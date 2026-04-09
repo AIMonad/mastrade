@@ -33,9 +33,8 @@ export function OpenClawChat() {
                 platform: "web",
                 mode: "webchat",
               },
-              // THE FIX: Declare scopes here, outside the auth block.
-              // This tells the Gateway what permissions this session needs.
-              scopes: ["operator.read", "operator.write"], 
+              // SCOPE AS A STRING: This is the specific requirement for v3 token-elevation
+              scope: "operator.read operator.write", 
               auth: {
                 token: GATEWAY_TOKEN
               }
@@ -60,7 +59,10 @@ export function OpenClawChat() {
         );
       }
 
-      if (data.ok === false) setStatus(`Error: ${data.error.message}`);
+      if (data.ok === false) {
+        setStatus(`Error: ${data.error.message}`);
+        console.error("Gateway Error Details:", data.error);
+      }
 
       if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
