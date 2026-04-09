@@ -34,16 +34,19 @@ export function OpenClawChat() {
             id: "auth-v3",
             method: "connect",
             params: {
-              // These are the new required properties the error asked for
               minProtocol: 3,
               maxProtocol: 3,
-              client: "mastrade-web-client",
-
-              // The auth details are now nested here
+              // 1. 'client' must be an object
+              client: {
+                id: "mastrade-web-client",
+                version: "1.0.0",
+              },
+              // 2. 'nonce' and 'signature' moved back to top level
+              nonce: data.payload.nonce,
+              signature: signature,
+              // 3. 'auth' only contains the token
               auth: {
                 token: GATEWAY_TOKEN,
-                nonce: data.payload.nonce,
-                signature: signature,
               },
             },
           }),
