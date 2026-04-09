@@ -35,20 +35,17 @@ export function OpenClawChat() {
               minProtocol: 3,
               maxProtocol: 3,
               client: {
-                // 'openclaw-control-ui' is the primary whitelisted constant for web clients
                 id: "openclaw-control-ui",
                 version: "1.0.0",
                 platform: "web",
-                // 'vps' or 'headless' are common mode constants for remote hosts
                 mode: "headless",
-              },
-              // In v3, challenge is a sibling to client and auth
-              challenge: {
-                nonce: data.payload.nonce,
-                signature: signature,
               },
               auth: {
                 token: GATEWAY_TOKEN,
+                challenge: {
+                  nonce: data.payload.nonce,
+                  signature: signature,
+                },
               },
             },
           }),
