@@ -34,20 +34,14 @@ export function OpenClawChat() {
       minProtocol: 3,
       maxProtocol: 3,
       client: {
-        // 'web-sdk' and 'production' are the two most common 'anyOf' constants
         id: "web-sdk", 
         version: "1.0.0",
         platform: "web",
-        mode: "production" 
+        mode: "production"
       },
-      // Trying the 'challenge' sub-object structure
-      challenge: {
-        nonce: data.payload.nonce,
-        signature: signature
-      },
-      auth: {
-        token: GATEWAY_TOKEN
-      }
+      token: GATEWAY_TOKEN,
+      nonce: data.payload.nonce,
+      signature: signature
     }
   }));
 }
