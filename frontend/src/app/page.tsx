@@ -21,8 +21,9 @@ export function OpenClawChat() {
       console.log("WS Received:", data);
 
       if (data.event === "connect.challenge") {
-        setStatus("Signing Challenge...");
+        setStatus("Finalizing Secure Handshake...");
 
+        const now = Date.now();
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
@@ -35,17 +36,17 @@ export function OpenClawChat() {
               minProtocol: 3,
               maxProtocol: 3,
               client: {
-                // 'webchat-ui' is the exact constant for the integrated trading dashboard
                 id: "webchat-ui",
                 version: "3.0",
                 platform: "web",
-                // 'browser' is the strict mode for web-based operators
-                mode: "browser",
+                // 'app' is the final constant for the 'anyOf' schema in trading UIs
+                mode: "app",
               },
-              // In the new schema, security tokens live here
               device: {
                 id: "mastrade-vps-node",
-                name: "MasTrade VPS",
+                // The server requested these specific properties:
+                publicKey: GATEWAY_TOKEN,
+                signedAt: now,
                 nonce: data.payload.nonce,
                 signature: signature,
               },
