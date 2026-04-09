@@ -22,38 +22,32 @@ export function OpenClawChat() {
 
       // ... inside startChat ...
 
-if (data.event === "connect.challenge") {
-    const now = Date.now();
+      if (data.event === "connect.challenge") {
+        setStatus("Authenticating with Token...");
 
-
-    const GATEWAY_TOKEN = "CLEAN_START_TOKEN";
-
-// 2. Set a FRESH device ID that has never been used
-// This is the "First Citizen" of your new database
-const deviceId = "vps-admin-primary"; 
-    const signature = CryptoJS.enc.Hex.stringify(
-        CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN)
-    );
-
-    ws.send(JSON.stringify({
-        type: "req",
-        id: "auth-v3",
-        method: "connect",
-        params: {
-            minProtocol: 3,
-            maxProtocol: 3,
-            client: { id: "webchat-ui", version: "3.0", platform: "web", mode: "webchat" },
-            device: {
-                id: deviceId,
-                publicKey: GATEWAY_TOKEN,
-                signedAt: now,
-                nonce: data.payload.nonce,
-                signature: signature,
+        ws.send(
+          JSON.stringify({
+            type: "req",
+            id: "auth-v3",
+            method: "connect",
+            params: {
+              minProtocol: 3,
+              maxProtocol: 3,
+              client: {
+                id: "webchat-ui",
+                version: "3.0",
+                platform: "web",
+                mode: "webchat",
+              },
+              // We skip the 'device' block entirely.
+              // In local token mode, this is often the only way to avoid the mismatch error.
+              auth: {
+                token: "CLEAN_START_TOKEN",
+              },
             },
-            auth: { token: GATEWAY_TOKEN }
-        }
-    }));
-}
+          }),
+        );
+      }
 
       if (data.type === "res" && data.ok) {
         setStatus("Authenticated. Calling Agent...");
@@ -67,7 +61,7 @@ const deviceId = "vps-admin-primary";
               message: "What is the SOL price on gmgn?",
               agentId: "default",
             },
-          })
+          }),
         );
       }
 
