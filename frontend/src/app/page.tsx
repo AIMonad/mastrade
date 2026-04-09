@@ -21,42 +21,40 @@ export function OpenClawChat() {
       console.log("WS Received:", data);
 
       if (data.event === "connect.challenge") {
-        setStatus("Finalizing Secure Handshake...");
+  setStatus("Finalizing Secure Handshake...");
 
-        const now = Date.now();
-        const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
-        const signature = CryptoJS.enc.Hex.stringify(hash);
+  const now = Date.now();
+  const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+  const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        ws.send(
-          JSON.stringify({
-            type: "req",
-            id: "auth-v3",
-            method: "connect",
-            params: {
-              minProtocol: 3,
-              maxProtocol: 3,
-              client: {
-                id: "webchat-ui",
-                version: "3.0",
-                platform: "web",
-                // 'app' is the final constant for the 'anyOf' schema in trading UIs
-                mode: "app",
-              },
-              device: {
-                id: "mastrade-vps-node",
-                // The server requested these specific properties:
-                publicKey: GATEWAY_TOKEN,
-                signedAt: now,
-                nonce: data.payload.nonce,
-                signature: signature,
-              },
-              auth: {
-                token: GATEWAY_TOKEN,
-              },
-            },
-          }),
-        );
+  ws.send(JSON.stringify({
+    type: "req",
+    id: "auth-v3",
+    method: "connect",
+    params: {
+      minProtocol: 3,
+      maxProtocol: 3,
+      client: {
+        // 'gateway-terminal' is the high-privilege ID for trading bots
+        id: "gateway-terminal", 
+        version: "3.0",
+        platform: "web",
+        // 'operator' is the most likely constant remaining in the 'anyOf' schema
+        mode: "operator" 
+      },
+      device: {
+        id: "mastrade-vps-node",
+        publicKey: GATEWAY_TOKEN,
+        signedAt: now,
+        nonce: data.payload.nonce,
+        signature: signature
+      },
+      auth: {
+        token: GATEWAY_TOKEN
       }
+    }
+  }));
+}
 
       // 2. Handle the successful connection response
       if (data.type === "res" && data.ok) {
