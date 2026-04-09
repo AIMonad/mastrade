@@ -38,8 +38,8 @@ export function OpenClawChat() {
         id: "openclaw-control-ui", 
         version: "1.0.0",
         platform: "web",
-        // 'bridge' is the specific constant for intermediary web apps
-        mode: "gateway" 
+        // Most common 'anyOf' constant when platform is web
+        mode: "web" 
       },
       device: {
         id: "mastrade-vps-node",
