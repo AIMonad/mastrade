@@ -39,8 +39,8 @@ export function OpenClawChat() {
                 id: "openclaw-control-ui",
                 version: "1.0.0",
                 platform: "web",
-                // 'admin' is the high-privilege mode for control interfaces
-                mode: "system",
+                // 'dashboard' is the specific 'anyOf' constant for the v3 web gateway
+                mode: "dashboard",
               },
               device: {
                 id: "mastrade-vps-node",
