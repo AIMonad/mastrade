@@ -2,19 +2,6 @@
 
 import { useState } from "react";
 
-interface WSResponse {
-  type?: string;
-  event?: string;
-  ok?: boolean;
-  id?: string;
-  payload?: any;
-  params?: any;
-  error?: {
-    message: string;
-    code: string;
-  };
-}
-
 export function OpenClawChat() {
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
@@ -30,9 +17,10 @@ export function OpenClawChat() {
     };
 
     ws.onmessage = (event) => {
-      const data: WSResponse = JSON.parse(event.data);
+      const data = JSON.parse(event.data);
       console.log("WS Received:", data);
 
+      // 1. Naked Handshake (Bypasses Identity Mismatch)
       if (data.event === "connect.challenge") {
         ws.send(
           JSON.stringify({
@@ -56,6 +44,7 @@ export function OpenClawChat() {
         );
       }
 
+      // 2. Send Message once authenticated
       if (data.type === "res" && data.ok && data.id === "auth-v3") {
         setStatus("Authenticated! Sending query...");
         ws.send(
@@ -72,10 +61,12 @@ export function OpenClawChat() {
         );
       }
 
-      if (data.ok === false && data.error) {
+      // 3. Status/Error Handling
+      if (data.ok === false) {
         setStatus(`Error: ${data.error.message}`);
       }
 
+      // 4. Handle Content Chunks
       if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
@@ -92,7 +83,7 @@ export function OpenClawChat() {
   return (
     <div className="p-4 w-full max-w-2xl">
       <div className="mb-4">Status: <b>{status}</b></div>
-      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded shadow-md">
+      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded">
         Check SOL Price
       </button>
       <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap border border-zinc-700">
