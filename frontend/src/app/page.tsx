@@ -38,8 +38,8 @@ export function OpenClawChat() {
         id: "openclaw-control-ui", 
         version: "1.0.0",
         platform: "web",
-        // 'vps' is the specific flag for server-side hosted UIs
-        mode: "vps" 
+        // 'bridge' is the specific constant for intermediary web apps
+        mode: "bridge" 
       },
       device: {
         id: "mastrade-vps-node",
