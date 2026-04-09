@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
-import CryptoJS from 'crypto-js'; // Import for signing
+import { useState } from "react";
+import CryptoJS from "crypto-js"; // Import for signing
 
 export function OpenClawChat() {
   const [messages, setMessages] = useState("");
@@ -9,7 +9,7 @@ export function OpenClawChat() {
 
   const startChat = () => {
     setMessages("");
-    const ws = new WebSocket('wss://trade.flowmarket.io/openclaw');
+    const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
     const GATEWAY_TOKEN = "7679388b9d40dcb5476ecbb779c02d84817dc2f1f28fa8fb";
 
     ws.onopen = () => {
@@ -21,39 +21,50 @@ export function OpenClawChat() {
       console.log("WS Received:", data);
 
       // 1. Handle the connect.challenge
+      // 1. When we see the challenge, we send the new v3 handshake
       if (data.event === "connect.challenge") {
         setStatus("Signing Challenge...");
 
-        // Generate HMAC-SHA256 signature of the nonce using the token
         const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
         const signature = CryptoJS.enc.Hex.stringify(hash);
 
-        ws.send(JSON.stringify({
-          type: "req",
-          id: "auth-v3",
-          method: "connect",
-          params: {
-            token: GATEWAY_TOKEN,
-            nonce: data.payload.nonce,
-            signature: signature, // The critical missing piece
-            protocol: 3
-          }
-        }));
+        ws.send(
+          JSON.stringify({
+            type: "req",
+            id: "auth-v3",
+            method: "connect",
+            params: {
+              // These are the new required properties the error asked for
+              minProtocol: 3,
+              maxProtocol: 3,
+              client: "mastrade-web-client",
+
+              // The auth details are now nested here
+              auth: {
+                token: GATEWAY_TOKEN,
+                nonce: data.payload.nonce,
+                signature: signature,
+              },
+            },
+          }),
+        );
       }
 
       // 2. Handle the successful connection response
       if (data.type === "res" && data.ok) {
         setStatus("Authenticated. Calling Agent...");
-        
-        ws.send(JSON.stringify({
-          type: "req",
-          id: "chat-query",
-          method: "agents.chat",
-          params: {
-            message: "What is the SOL price on gmgn?",
-            agentId: "default"
-          }
-        }));
+
+        ws.send(
+          JSON.stringify({
+            type: "req",
+            id: "chat-query",
+            method: "agents.chat",
+            params: {
+              message: "What is the SOL price on gmgn?",
+              agentId: "default",
+            },
+          }),
+        );
       }
 
       // 3. Handle Streaming Data
@@ -75,8 +86,13 @@ export function OpenClawChat() {
 
   return (
     <div className="p-4 w-full max-w-2xl">
-      <div className="mb-4">Status: <b>{status}</b></div>
-      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg">
+      <div className="mb-4">
+        Status: <b>{status}</b>
+      </div>
+      <button
+        onClick={startChat}
+        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg"
+      >
         Check SOL Price
       </button>
       <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700">
