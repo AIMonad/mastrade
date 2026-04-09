@@ -40,7 +40,7 @@ export function OpenClawChat() {
                 version: "1.0.0",
                 platform: "web",
                 // 'admin' is the high-privilege mode for control interfaces
-                mode: "terminal",
+                mode: "system",
               },
               device: {
                 id: "mastrade-vps-node",
