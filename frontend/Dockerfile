@@ -1,22 +1,23 @@
-FROM node:20
+FROM node:20-slim 
+# Slim is better for low-memory VPS
 
 WORKDIR /app
 
-# Copy dependency files
+# Install essential build tools (sometimes needed for crypto libs)
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 COPY package.json package-lock.json* ./
 
-# Clean and install (standard install is safer here than 'ci' when changing versions)
-RUN npm cache clean --force && npm install
+# Install with flags to save memory and ensure binaries are linked
+RUN npm install --no-audit --no-fund --loglevel=error
 
-# Copy the rest of your app code
 COPY . .
 
-# EXPLICITLY set the path so the container can find the 'next' command
-ENV PATH /app/node_modules/.bin:$PATH
+# Set environment
 ENV NODE_ENV=production
 
-# Run build using the absolute path to be 100% sure
-RUN ./node_modules/.bin/next build
+# Use 'npx' which is smarter at finding the local 'next' binary
+RUN npx next build
 
 EXPOSE 3000
 CMD ["npm", "start"]
