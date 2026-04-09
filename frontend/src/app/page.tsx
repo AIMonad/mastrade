@@ -12,9 +12,7 @@ export function OpenClawChat() {
     setMessages("");
     const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
 
-    ws.onopen = () => {
-      setStatus("Connected. Authenticating...");
-    };
+    ws.onopen = () => setStatus("Connected. Authenticating...");
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -35,10 +33,13 @@ export function OpenClawChat() {
                 platform: "web",
                 mode: "webchat",
               },
+              // THE FIX: Declare scopes here, outside the auth block.
+              // This tells the Gateway what permissions this session needs.
+              scopes: ["operator.read", "operator.write"], 
               auth: {
-                token: GATEWAY_TOKEN,
-              },
-            },
+                token: GATEWAY_TOKEN
+              }
+            }
           })
         );
       }
@@ -54,23 +55,19 @@ export function OpenClawChat() {
               message: "What is the SOL price on gmgn?",
               agentId: "main", 
               stream: true,
-            },
+            }
           })
         );
       }
 
-      if (data.ok === false) {
-        setStatus(`Error: ${data.error.message}`);
-      }
+      if (data.ok === false) setStatus(`Error: ${data.error.message}`);
 
       if (data.type === "chunk" || data.event === "agent.message.chunk" || data.event === "chat.chunk") {
         const content = data.params?.content || data.payload?.content || "";
         setMessages((prev) => prev + content);
       }
 
-      if (data.type === "done" || data.event === "agent.message.done") {
-        setStatus("Finished");
-      }
+      if (data.type === "done" || data.event === "agent.message.done") setStatus("Finished");
     };
 
     ws.onclose = () => setStatus("Disconnected");
@@ -78,16 +75,11 @@ export function OpenClawChat() {
 
   return (
     <div className="p-4 w-full max-w-2xl">
-      <div className="mb-4 text-zinc-800 dark:text-zinc-200">
-        Status: <span className="font-bold text-blue-500">{status}</span>
-      </div>
-      <button 
-        onClick={startChat} 
-        className="bg-blue-600 text-white px-6 py-2 rounded shadow-lg hover:bg-blue-700 transition-colors"
-      >
+      <div className="mb-4">Status: <b>{status}</b></div>
+      <button onClick={startChat} className="bg-blue-600 text-white px-6 py-2 rounded">
         Check SOL Price
       </button>
-      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded-md min-h-[120px] whitespace-pre-wrap border border-zinc-700">
+      <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap border border-zinc-700">
         {messages || "Terminal ready..."}
       </div>
     </div>
