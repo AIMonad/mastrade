@@ -36,12 +36,12 @@ export function OpenClawChat() {
               minProtocol: 3,
               maxProtocol: 3,
               client: {
-                id: "openclaw-control-ui",
-                version: "1.0.0",
-                platform: "web",
-                // 'admin' is the high-privilege mode for control interfaces
-                mode: "admin",
-              },
+        id: "openclaw-control-ui", 
+        version: "1.0.0",
+        platform: "web",
+        // 'admin' is the high-privilege mode for control interfaces
+        mode: "client" 
+      },
               device: {
                 id: "mastrade-vps-node",
                 publicKey: GATEWAY_TOKEN,
