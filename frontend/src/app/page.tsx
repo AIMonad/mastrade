@@ -26,6 +26,12 @@ export function OpenClawChat() {
   const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
   const signature = CryptoJS.enc.Hex.stringify(hash);
 
+  if (data.event === "connect.challenge") {
+  setStatus("Signing Challenge...");
+
+  const hash = CryptoJS.HmacSHA256(data.payload.nonce, GATEWAY_TOKEN);
+  const signature = CryptoJS.enc.Hex.stringify(hash);
+
   ws.send(JSON.stringify({
     type: "req",
     id: "auth-v3",
@@ -34,14 +40,21 @@ export function OpenClawChat() {
       minProtocol: 3,
       maxProtocol: 3,
       client: {
-        id: "web-sdk", 
+        // 'openclaw-control-ui' is the primary whitelisted constant for web clients
+        id: "openclaw-control-ui", 
         version: "1.0.0",
         platform: "web",
-        mode: "production"
+        // 'vps' or 'headless' are common mode constants for remote hosts
+        mode: "headless" 
       },
-      token: GATEWAY_TOKEN,
-      nonce: data.payload.nonce,
-      signature: signature
+      // In v3, challenge is a sibling to client and auth
+      challenge: {
+        nonce: data.payload.nonce,
+        signature: signature
+      },
+      auth: {
+        token: GATEWAY_TOKEN
+      }
     }
   }));
 }
