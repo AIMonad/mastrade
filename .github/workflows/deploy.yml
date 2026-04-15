@@ -5,18 +5,22 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy-mastrade
+  cancel-in-progress: true
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: deploy
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /docker/mastrade
-            git pull
-            docker compose pull
-            docker compose up -d --build
+  runs-on: ubuntu-latest
+  steps:
+    - name: Deploy on VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: deploy
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script_stop: true
+        script: |
+          cd /docker/mastrade
+          git pull --ff-only origin main
+          docker compose up -d --build --remove-orphans
