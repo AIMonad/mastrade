@@ -10,7 +10,7 @@ export function OpenClawChat() {
 
   const startChat = () => {
     setMessages("");
-    const ws = new WebSocket("wss://trade.flowmarket.io/openclaw");
+    const ws = new WebSocket("wss://www.flowmarket.io/openclaw");
 
     ws.onopen = () => setStatus("Connected. Authenticating...");
 
@@ -88,7 +88,7 @@ export function OpenClawChat() {
 export default function Page() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-black p-4">
-      <OpenClawChat />
+      Flowmarket
     </div>
   );
 }
