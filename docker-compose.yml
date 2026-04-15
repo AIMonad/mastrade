@@ -3,10 +3,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      container_name: mastrade-backend
-      restart: unless-stopped
-      volumes:
-        - ./backend_data:/data
+    container_name: mastrade-backend
+    restart: unless-stopped
+    volumes:
+      - ./backend_data:/data
     environment:
       - DATABASE_URL=sqlite:////data/mastrade.db
       - FLASK_ENV=production
@@ -30,11 +30,11 @@ services:
       dockerfile: Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=https://www.flowmarket.io/api
-      dns:
-        - 8.8.8.8
-        - 1.1.1.1
-      container_name: mastrade-frontend
-      restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    container_name: mastrade-frontend
+    restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=https://www.flowmarket.io/api
     networks:
