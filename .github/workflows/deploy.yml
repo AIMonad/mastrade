@@ -16,6 +16,7 @@ jobs:
           username: deploy
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /apps/mastrade
-            git pull origin main
-            bash deploy.sh
+            cd /docker/mastrade
+            git pull
+            docker compose pull
+            docker compose up -d --build

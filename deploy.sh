@@ -30,32 +30,32 @@ sudo chown -R 1000:1000 openclaw-config
 
 # Pull latest OpenClaw image
 echo -e "${YELLOW}Pulling latest images...${NC}"
-docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.yml pull
 
 # Build mastrade images
 echo -e "${YELLOW}Building images...${NC}"
-docker compose -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.yml build --no-cache
 
 # Stop existing containers gracefully
 echo -e "${YELLOW}Stopping existing containers...${NC}"
-docker compose -f docker-compose.prod.yml down 2>/dev/null || true
+docker compose -f docker-compose.yml down 2>/dev/null || true
 
 # Start everything
 echo -e "${YELLOW}Starting containers...${NC}"
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml up -d
 
 sleep 5
 
 echo -e "${YELLOW}Container status:${NC}"
-docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.yml ps
 
-if docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
+if docker compose -f docker-compose.yml ps | grep -q "Up"; then
     echo -e "${GREEN}=== Deployment Successful ===${NC}"
     echo -e "${GREEN}✓ App:      https://www.flowmarket.io${NC}"
     echo -e "${GREEN}✓ API:      https://www.flowmarket.io/api${NC}"
     echo -e "${GREEN}✓ OpenClaw: https://openclaw.flowmarket.io${NC}"
 else
     echo -e "${RED}=== Deployment Failed ===${NC}"
-    echo -e "${RED}Check logs:${NC} docker compose -f docker-compose.prod.yml logs"
+    echo -e "${RED}Check logs:${NC} docker compose -f docker-compose.yml logs"
     exit 1
 fi
