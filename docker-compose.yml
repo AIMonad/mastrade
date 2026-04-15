@@ -11,7 +11,7 @@ services:
       - DATABASE_URL=sqlite:////data/mastrade.db
       - FLASK_ENV=production
     networks:
-      - mastrade_default
+      - traefik-proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mastrade-api.rule=Host(`www.flowmarket.io`) && PathPrefix(`/api`)"
@@ -36,7 +36,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=https://www.flowmarket.io/api
     networks:
-      - mastrade_default
+      - traefik-proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mastrade-ui.rule=Host(`www.flowmarket.io`)"
@@ -46,24 +46,16 @@ services:
       - "traefik.http.services.mastrade-ui.loadbalancer.server.port=3000"
 
   openclaw:
-    image: ghcr.io/openclaw/openclaw:latest
-    container_name: openclaw
-    restart: unless-stopped
-    volumes:
-      - ./openclaw-config:/home/node/.openclaw
-    environment:
-      - OPENCLAW_GATEWAY_BIND=lan
-    networks:
-      - mastrade_default
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.openclaw.rule=Host(`openclaw.flowmarket.io`)"
-      - "traefik.http.routers.openclaw.entrypoints=websecure"
-      - "traefik.http.routers.openclaw.tls.certresolver=myresolver"
-      - "traefik.http.routers.openclaw.priority=5"
-      - "traefik.http.services.openclaw.loadbalancer.server.port=18789"
+  image: ghcr.io/openclaw/openclaw:latest
+  labels:
+  - traefik.enable=true
+  - traefik.http.routers.openclaw.rule=Host(`www.flowmarket.io`)
+  - traefik.http.routers.openclaw.entrypoints=websecure
+  - traefik.http.routers.openclaw.tls.certresolver=letsencrypt
+  - traefik.http.services.openclaw.loadbalancer.server.port=YOUR_APP_PORT
+  networks:
+  - traefik-proxy
 
 networks:
-  mastrade_default:
+  traefik-proxy:
     external: true
-    name: mastrade_default
