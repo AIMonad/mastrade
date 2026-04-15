@@ -69,6 +69,6 @@ services:
       - "traefik.http.services.openclaw.loadbalancer.server.port=18789"
 
 networks:
-  mastrade_default:
-  external: true
-  name: mastrade_default
+ mastrade_default:
+ external: true
+ name: mastrade_default

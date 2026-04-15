@@ -324,3 +324,7 @@ docker inspect mastrade-backend
 ---
 
 For issues or questions, check the logs and refer to the Docker and Docker Compose documentation.
+
+
+admin:$$2y$$05$$Qo1VlwFfTycIiZcNZfyHL.fgCBl../Qj8ksGFfE57wTv9cnt45sU6
+72.62.82.1
