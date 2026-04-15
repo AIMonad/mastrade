@@ -1,2 +1,4 @@
 The key fingerprint is:
 SHA256:mdknIQa/6NY+unaHDmF/d5S9gZzm68d8rBJpDcttkQA mastrade-vps
+
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHoHruyuYubkCYUqRcrrFLmKH10Y15CHBFl+JM307K// mastrade-vps
