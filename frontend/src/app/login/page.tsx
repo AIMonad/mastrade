@@ -82,7 +82,7 @@ export default function LoginPage() {
         <div
           className="hud-card p-8"
           style={{
-            background: "rgba(111, 142, 243, 0.75)",
+            background: "rgba(0, 0, 0, 0.5)",
             border: "1px solid rgba(6, 182, 212, 0.2)",
           }}
         >
