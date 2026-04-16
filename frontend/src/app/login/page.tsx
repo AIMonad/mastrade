@@ -77,30 +77,23 @@ export default function LoginPage() {
   return (
     <div ref={vantaRef}
       className="min-h-screen flex items-center justify-center"
-      style={{ background: "linear-gradient(135deg, #0a0a0f 0%, #0d1117 40%, #0a0f1a 100%)" }}
     >
       <div className="w-full max-w-md">
         <div
           className="hud-card p-8"
           style={{
-            background: "rgba(255,255,255,0.02)",
+            background: "rgba(111, 142, 243, 0.75)",
             border: "1px solid rgba(6, 182, 212, 0.2)",
           }}
         >
-          {/* ── Header ── */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-1 h-6 bg-cyan-400 rounded-full" />
               <h1 className="font-black font-mono tracking-widest text-cyan-400 text-lg">
-                AUTH
+                FLOWMARKET
               </h1>
             </div>
-            <p className="text-gray-500 text-xs font-mono ml-5">
-              SECURE LOGIN
-            </p>
           </div>
-
-          {/* ── Form ── */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-mono text-gray-400 mb-2">
@@ -115,7 +108,6 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
-
             <div>
               <label className="block text-xs font-mono text-gray-400 mb-2">
                 PASSWORD
@@ -129,13 +121,11 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
-
             {error && (
               <div className="p-3 bg-red-900/20 border border-red-700/50 rounded text-red-400 text-xs font-mono">
                 ✗ {error}
               </div>
             )}
-
             <button
               type="submit"
               disabled={isLoading}
@@ -144,10 +134,6 @@ export default function LoginPage() {
               {isLoading ? "AUTHENTICATING..." : "LOGIN"}
             </button>
           </form>
-
-          <p className="text-gray-600 text-[10px] font-mono mt-6 text-center">
-            CREDENTIALS VERIFIED
-          </p>
         </div>
       </div>
     </div>
