@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { checkAuth, AUTH_KEY } from "@/app/auth";
-//import { setupStealthWallets } from "@/app/components/stealth-wallets-init";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -11,9 +10,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Initialize stealth wallets from .env on app load
-    //setupStealthWallets();
-
     const publicRoutes = ["/login"];
     const isPublicRoute = publicRoutes.includes(pathname);
 

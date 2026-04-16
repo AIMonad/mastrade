@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthGuard } from './_auth-guard'
 
 export const metadata: Metadata = {
-  title: "Mastrade",
-  description: "Real-time SOL Trading",
+  title: "Flowmarket",
+  description: "",
 };
 
 export default function RootLayout({
