@@ -48,7 +48,7 @@ export default function LoginPage() {
               </h1>
             </div>
             <p className="text-gray-500 text-xs font-mono ml-5">
-              SECURE LOGIN · SOLANA BOT
+              SECURE LOGIN
             </p>
           </div>
 
@@ -98,7 +98,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-gray-600 text-[10px] font-mono mt-6 text-center">
-            CREDENTIALS VERIFIED LOCALLY
+            CREDENTIALS VERIFIED
           </p>
         </div>
       </div>

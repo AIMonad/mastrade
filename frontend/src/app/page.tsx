@@ -1,12 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { logout } from "@/app/auth";
 
 export function OpenClawChat() {
+
   const [messages, setMessages] = useState("");
   const [status, setStatus] = useState("Disconnected");
 
   const GATEWAY_TOKEN = "CLEAN_START_TOKEN"; 
+
+const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   const startChat = () => {
     setMessages("");
@@ -81,6 +91,12 @@ export function OpenClawChat() {
       <div className="mt-4 p-4 bg-zinc-900 text-green-400 font-mono rounded min-h-[120px] whitespace-pre-wrap border border-zinc-700">
         {messages || "Terminal ready..."}
       </div>
+      <button
+            onClick={handleLogout}
+            className="px-3 py-2 text-xs font-mono bg-red-900/30 hover:bg-red-900/50 border border-red-700/50 rounded text-red-400 hover:text-red-300 transition-colors"
+          >
+            LOGOUT
+      </button>
     </div>
   );
 }
