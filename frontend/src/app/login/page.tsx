@@ -3,13 +3,61 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/app/auth";
+import { useEffect, useRef } from "react";
 
+declare global {
+  interface Window {
+    VANTA: any;
+    THREE: any;
+  }
+}
+
+const loadScript = (src: string): Promise<void> =>
+  new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve();
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const vantaRef = useRef<HTMLDivElement>(null);
+    const vantaEffect = useRef<any>(null);
+  
+     useEffect(() => {
+      const init = async () => {
+        await loadScript("https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js");
+        await loadScript("https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js");
+  
+        if (vantaRef.current && window.VANTA) {
+          vantaEffect.current = window.VANTA.WAVES({
+            el: vantaRef.current,
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            shininess: 99.00,
+          });
+        }
+      };
+  
+      init();
+  
+      return () => {
+        vantaEffect.current?.destroy();
+      };
+    }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +75,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div
+    <div ref={vantaRef}
       className="min-h-screen flex items-center justify-center"
       style={{ background: "linear-gradient(135deg, #0a0a0f 0%, #0d1117 40%, #0a0f1a 100%)" }}
     >

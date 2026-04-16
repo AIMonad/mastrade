@@ -3,24 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { logout } from "@/app/auth";
-import { useEffect, useRef } from "react";
-
-declare global {
-  interface Window {
-    VANTA: any;
-    THREE: any;
-  }
-}
-
-const loadScript = (src: string): Promise<void> =>
-  new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) return resolve();
-    const script = document.createElement("script");
-    script.src = src;
-    script.onload = () => resolve();
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
 
 export function OpenClawChat() {
   const [messages, setMessages] = useState("");
@@ -129,39 +111,10 @@ export function OpenClawChat() {
 }
 
 export default function Page() {
-  const vantaRef = useRef<HTMLDivElement>(null);
-  const vantaEffect = useRef<any>(null);
-
-   useEffect(() => {
-    const init = async () => {
-      await loadScript("https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js");
-      await loadScript("https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js");
-
-      if (vantaRef.current && window.VANTA) {
-        vantaEffect.current = window.VANTA.WAVES({
-          el: vantaRef.current,
-          mouseControls: true,
-          touchControls: true,
-          gyroControls: false,
-          minHeight: 200.00,
-          minWidth: 200.00,
-          scale: 1.00,
-          scaleMobile: 1.00,
-          shininess: 99.00,
-        });
-      }
-    };
-
-    init();
-
-    return () => {
-      vantaEffect.current?.destroy();
-    };
-  }, []);
 
   return (
     <>
-      <div ref={vantaRef} className="flex max-h-screen max-w-screen items-center justify-center bg-zinc-50 dark:bg-black p-4 w-full">
+      <div className="flex max-h-screen max-w-screen items-center justify-center bg-zinc-50 dark:bg-black p-4 w-full">
         <div className="flex p-4 w-full">Flowmarket</div>
         <div className="flex p-4 w-full">
           <OpenClawChat />
