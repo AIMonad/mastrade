@@ -76,7 +76,7 @@ export default function LoginPage() {
 
   return (
     <div ref={vantaRef}
-      className="w-full h-full flex items-center justify-center"
+      className="w-full min-h-screen flex items-center justify-center"
     >
       <div className="w-full max-w-md">
         <div

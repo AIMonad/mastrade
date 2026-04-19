@@ -7,8 +7,8 @@ export const checkAuth = (): boolean => {
 };
 
 export const login = (username: string, password: string): boolean => {
-  const validUsername = process.env.NEXT_PUBLIC_LOGIN_USERNAME || 'admin';
-  const validPassword = process.env.NEXT_PUBLIC_LOGIN_PASSWORD || 'password';
+  const validUsername = process.env.NEXT_PUBLIC_LOGIN_USERNAME || 'admin_123';
+  const validPassword = process.env.NEXT_PUBLIC_LOGIN_PASSWORD || 'password_123';
   
   if (username === validUsername && password === validPassword) {
     localStorage.setItem(AUTH_KEY, 'authenticated');
