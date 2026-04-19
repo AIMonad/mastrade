@@ -50,6 +50,7 @@ services:
       OPENCLAW_GATEWAY_BIND: lan
     networks:
       - traefik-proxy
+      - default
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-proxy
