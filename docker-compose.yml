@@ -48,8 +48,11 @@ services:
       - ./openclaw-config:/home/node/.openclaw
     environment:
       OPENCLAW_GATEWAY_BIND: lan
+    networks:
+      - traefik-proxy
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
       - traefik.http.routers.openclaw.rule=Host(`openclaw.flowmarket.io`)
       - traefik.http.routers.openclaw.entrypoints=websecure
       - traefik.http.routers.openclaw.tls=true
