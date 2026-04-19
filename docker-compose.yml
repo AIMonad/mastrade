@@ -1,52 +1,58 @@
 services:
  backend:
-  image: <your-registry>/mastrade-backend:latest
+  build:
+  context: ./backend
+  dockerfile: Dockerfile
   container_name: mastrade-backend
   restart: unless-stopped
   volumes:
-  - ./backend_data:/data
+   - ./backend_data:/data
   environment:
-  - DATABASE_URL=sqlite:////data/mastrade.db
-  - FLASK_ENV=production
+  DATABASE_URL: sqlite:////data/mastrade.db
+  FLASK_ENV: production
   labels:
-  - traefik.enable=true
-  - traefik.http.routers.mastrade-api.rule=(Host(`flowmarket.io`) || Host(`www.flowmarket.io`)) && PathPrefix(`/api`)
-  - traefik.http.routers.mastrade-api.entrypoints=websecure
-  - traefik.http.routers.mastrade-api.tls=true
-  - traefik.http.routers.mastrade-api.tls.certresolver=letsencrypt
-  - traefik.http.routers.mastrade-api.priority=10
-  - traefik.http.services.mastrade-api.loadbalancer.server.port=5000
-  - traefik.http.middlewares.api-strip.stripprefix.prefixes=/api
-  - traefik.http.routers.mastrade-api.middlewares=api-strip
+   - traefik.enable=true
+   - traefik.http.routers.mastrade-api.rule=(Host(`flowmarket.io`) || Host(`www.flowmarket.io`)) && PathPrefix(`/api`)
+   - traefik.http.routers.mastrade-api.entrypoints=websecure
+   - traefik.http.routers.mastrade-api.tls=true
+   - traefik.http.routers.mastrade-api.tls.certresolver=letsencrypt
+   - traefik.http.routers.mastrade-api.priority=10
+   - traefik.http.services.mastrade-api.loadbalancer.server.port=5000
+   - traefik.http.middlewares.api-strip.stripprefix.prefixes=/api
+   - traefik.http.routers.mastrade-api.middlewares=api-strip
 
  frontend:
-  image: <your-registry>/mastrade-frontend:latest
+  build:
+  context: ./frontend
+  dockerfile: Dockerfile
+  args:
+   NEXT_PUBLIC_API_URL: https://flowmarket.io/api
   container_name: mastrade-frontend
   restart: unless-stopped
   environment:
-  - NEXT_PUBLIC_API_URL=https://flowmarket.io/api
+   NEXT_PUBLIC_API_URL: https://flowmarket.io/api
   labels:
-  - traefik.enable=true
-  - traefik.http.routers.mastrade-ui.rule=Host(`flowmarket.io`) || Host(`www.flowmarket.io`)
-  - traefik.http.routers.mastrade-ui.entrypoints=websecure
-  - traefik.http.routers.mastrade-ui.tls=true
-  - traefik.http.routers.mastrade-ui.tls.certresolver=letsencrypt
-  - traefik.http.routers.mastrade-ui.priority=1
-  - traefik.http.services.mastrade-ui.loadbalancer.server.port=3000
+   - traefik.enable=true
+   - traefik.http.routers.mastrade-ui.rule=Host(`flowmarket.io`) || Host(`www.flowmarket.io`)
+   - traefik.http.routers.mastrade-ui.entrypoints=websecure
+   - traefik.http.routers.mastrade-ui.tls=true
+   - traefik.http.routers.mastrade-ui.tls.certresolver=letsencrypt
+   - traefik.http.routers.mastrade-ui.priority=1
+   - traefik.http.services.mastrade-ui.loadbalancer.server.port=3000
 
  openclaw:
   image: ghcr.io/openclaw/openclaw:latest
   container_name: openclaw
   restart: unless-stopped
   volumes:
-  - ./openclaw-config:/home/node/.openclaw
+   - ./openclaw-config:/home/node/.openclaw
   environment:
-  - OPENCLAW_GATEWAY_BIND=lan
+   OPENCLAW_GATEWAY_BIND: lan
   labels:
-  - traefik.enable=true
-  - traefik.http.routers.openclaw.rule=Host(`openclaw.flowmarket.io`)
-  - traefik.http.routers.openclaw.entrypoints=websecure
-  - traefik.http.routers.openclaw.tls=true
-  - traefik.http.routers.openclaw.tls.certresolver=letsencrypt
-  - traefik.http.routers.openclaw.priority=5
-  - traefik.http.services.openclaw.loadbalancer.server.port=18789
+   - traefik.enable=true
+   - traefik.http.routers.openclaw.rule=Host(`openclaw.flowmarket.io`)
+   - traefik.http.routers.openclaw.entrypoints=websecure
+   - traefik.http.routers.openclaw.tls=true
+   - traefik.http.routers.openclaw.tls.certresolver=letsencrypt
+   - traefik.http.routers.openclaw.priority=5
+   - traefik.http.services.openclaw.loadbalancer.server.port=18789
