@@ -1,0 +1,34 @@
+-- Table 1: Items with core pricing metrics
+CREATE TABLE items (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    sku         TEXT UNIQUE,
+    purchase_price  REAL NOT NULL,
+    sell_price      REAL NOT NULL,
+    stock_quantity  INTEGER DEFAULT 0,
+    weight_kg       REAL,
+    created_at  TEXT DEFAULT (datetime('now'))
+);
+
+-- Table 2: Performance metrics linked to an item
+CREATE TABLE item_metrics (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id         INTEGER NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+    recorded_at     TEXT DEFAULT (datetime('now')),
+
+    -- Sales performance
+    units_sold          INTEGER DEFAULT 0,
+    revenue             REAL DEFAULT 0.0,
+    return_rate         REAL DEFAULT 0.0,   -- percentage, e.g. 4.5 = 4.5%
+
+    -- Customer feedback
+    avg_rating          REAL,               -- 1.0 – 5.0
+    review_count        INTEGER DEFAULT 0,
+
+    -- Inventory health
+    days_in_stock       INTEGER DEFAULT 0,
+    reorder_triggered   INTEGER DEFAULT 0   -- boolean: 0 or 1
+);
+
+-- Index for fast lookups by item
+CREATE INDEX idx_item_metrics_item_id ON item_metrics(item_id);

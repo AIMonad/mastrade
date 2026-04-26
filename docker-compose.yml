@@ -47,7 +47,7 @@ services:
     volumes:
       - ./openclaw-config:/home/node/.openclaw
     environment:
-      OPENCLAW_GATEWAY_BIND: lan
+      OPENCLAW_GATEWAY_BIND: 0.0.0.0
     networks:
       - traefik-proxy
       - default
