@@ -59,7 +59,7 @@ services:
       - traefik.http.routers.openclaw.tls=true
       - traefik.http.routers.openclaw.tls.certresolver=letsencrypt
       - traefik.http.routers.openclaw.priority=5
-      - traefik.http.services.openclaw.loadbalancer.server.port=18789
+      - traefik.http.services.openclaw.loadbalancer.server.port=3000
 
 networks:
   traefik-proxy:
