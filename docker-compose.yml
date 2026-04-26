@@ -47,7 +47,7 @@ services:
     volumes:
       - ./openclaw-config:/home/node/.openclaw
     environment:
-      OPENCLAW_GATEWAY_BIND: 0.0.0.0
+      OPENCLAW_GATEWAY_BIND: lan
     networks:
       - traefik-proxy
       - default
@@ -59,7 +59,7 @@ services:
       - traefik.http.routers.openclaw.tls=true
       - traefik.http.routers.openclaw.tls.certresolver=letsencrypt
       - traefik.http.routers.openclaw.priority=5
-      - traefik.http.services.openclaw.loadbalancer.server.port=3000
+      - traefik.http.services.openclaw.loadbalancer.server.port=18789
 
 networks:
   traefik-proxy:
