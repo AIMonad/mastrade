@@ -41,7 +41,10 @@ services:
       - traefik.http.services.mastrade-ui.loadbalancer.server.port=3000
 
   openclaw:
-    image: ghcr.io/openclaw/openclaw:latest
+    # Changed from image to build to include Python
+    build:
+      context: .
+      dockerfile: Dockerfile.openclaw
     container_name: openclaw
     restart: unless-stopped
     volumes:
