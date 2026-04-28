@@ -41,7 +41,7 @@ services:
       - traefik.http.services.mastrade-ui.loadbalancer.server.port=3000
 
   openclaw:
-    # Changed from image to build to include Python
+    image: mastrade-openclaw:latest  # Add this line
     build:
       context: .
       dockerfile: Dockerfile.openclaw
