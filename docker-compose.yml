@@ -41,10 +41,7 @@ services:
       - traefik.http.services.mastrade-ui.loadbalancer.server.port=3000
 
   openclaw:
-    image: mastrade-openclaw:latest
-    build:
-      context: .
-      dockerfile: Dockerfile.openclaw
+    image: ghcr.io/openclaw/openclaw:latest
     container_name: openclaw
     restart: unless-stopped
     volumes:

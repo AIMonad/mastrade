@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-RUN find /usr/local/lib/node_modules/openclaw -name "index.html" | xargs -I{} sed -i \
-    's|</head>|<style>table{font-size:10px !important;}td,th{padding:2px 3px !important;}</style></head>|' {}
+#RUN find /usr/local/lib/node_modules/openclaw -name "index.html" | xargs -I{} sed -i \
+#    's|</head>|<style>table{font-size:10px !important;}td,th{padding:2px 3px !important;}</style></head>|' {}
 
 USER node
